@@ -60,6 +60,7 @@ counts_for_TCGA <- genes_normalized %>%
   mutate(GENENAME = annot$SYMBOL[match(GENEID, annot$GENEID)]) %>%
   dplyr::select(GENENAME, everything())
 
+
 #Write to a file for access later
 write.csv(counts_for_TCGA, "data/TCGA_normalized_counts.csv")
 
