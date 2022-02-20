@@ -25,6 +25,3 @@ key_genes_dataset <- full_dataset %>%
 
 write.csv(key_genes_dataset, 'data/combined_normalized_counts_filtered.csv')
 write.csv(full_dataset, 'data/combined_normalized_counts.csv')
-
-
-
