@@ -51,5 +51,7 @@ BHLNSX_sig_out <- prev_method_calculator(DRCHP_Sig, DRCHP_coef, key_genes_data)
 prev_methods_results <- data.frame(GR = t(GR_sig_out), HOSS = t(HOSS_sig_out), PRGIT = t(PRGIT_sig_out),
                       DRCHP = t(DRCHP_sig_out), BHLNSX = t(BHLNSX_sig_out))
 
-write.csv(prev_methods_results, file = 'results/prev_methods_results')
+prev_methods_results
+
+write.csv(prev_methods_results, file = 'results/prev_methods_results.csv')
 

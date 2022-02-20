@@ -28,6 +28,7 @@ ensemble_binary_results <- data.frame(sample = rownames(binary_results)[c(7:9,1,
                                       risk_category = ensemble_binary_results)
 write.csv(ensemble_binary_results, 'results/ensemble_prev_methods_results.csv')
 
+#Strip chart here (Not sure if this is very interesting)
 stripchart(scale(ensemble_results$GR), ylim = c(0,5), xlim = c(-4,4))
 stripchart(scale(ensemble_results$HOSS), at = 2, add = T)
 stripchart(scale(ensemble_results$PRGIT), at = 3, add = T)
