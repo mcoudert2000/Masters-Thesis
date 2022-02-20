@@ -27,10 +27,9 @@ kplots5 <- fviz_cluster(kmeans(PCA_data, centers = 5), data = PCA_data, labelsiz
 require(ggpubr)
 kmeans_plot <- ggarrange(kplots2, kplots3, kplots4, kplots5, labels = c("2","3","4","5"))
 
-
+#save plot
 png(filename = "plots/KMeans Clustering on Results from Various Gene Signature Studies.png",
     width = 800, height = 400)
 plot(kmeans_plot, main = "Kmeans Clustering on Results from Various Gene Signature Studies")
-
 dev.off()
 
