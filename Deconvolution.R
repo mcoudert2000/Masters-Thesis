@@ -60,11 +60,17 @@ colnames(estimate_scores) <- estimate_scores[1,]
 estimate_scores <- as.data.frame(estimate_scores[2:70,])
 estimate_scores[] <- lapply(estimate_scores, as.numeric)
 
-require(gghighlight)
-
+#Plot 
 ggplot(estimate_scores[10:69,]) +
   geom_point(aes(x = StromalScore, y = ImmuneScore, col = 'TCGA')) +
-  geom_point(data = estimate_scores[1:9,], aes(x = StromalScore, y = ImmuneScore, col = 'ASTRID\'s'))
+  geom_point(data = estimate_scores[1:9,], aes(x = StromalScore, y = ImmuneScore, col = 'ASTRID\'s')) +
+  geom_smooth(data = estimate_scores, aes(x = StromalScore, y = ImmuneScore), method = lm, se = T, linetype = 2, col = 'black') +
+  ggtitle("Stromal Score vs Immune Score")
+
+ggplot(estimate_scores[10:69,]) +
+  geom_point(aes(x = 0, y = ESTIMATEScore, col = 'TCGA')) +
+  geom_point(data = estimate_scores[1:9,], aes(x = 0, y = ESTIMATEScore, col = 'ASTRID\'s')) +
+  geom_hline(yintercept = median(estimate_scores$ESTIMATEScore), linetype = 2)
 
 
 
