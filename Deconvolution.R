@@ -31,3 +31,25 @@ binary_results[1:9]
 rforge <- "http://r-forge.r-project.org"
 install.packages("estimate", repos=rforge, dependencies=TRUE)
 require(estimate)
+library(help = "estimate")
+
+deconvolution_data
+?filterCommonGenes
+estimate_data <- read.csv('data/combined_normalized_counts.csv')
+
+
+removed_duplicates <- merge_duplicate_rows(estimate_data[,2:71])
+removed_duplicates$GeneSymbol <- rownames(removed_duplicates)
+
+write.table(removed_duplicates, file = 'data/estimate_normalized_counts.txt', sep = '\t', quote = F)
+eset <- ExpressionSet(assayData = as.matrix(removed_duplicates))
+View(eset)
+
+filterCommonGenes(input.f = 'data/estimate_normalized_counts.txt', 
+                  output.f = 'results/estimate/GBM_10412genes.gct',
+                  id = 'GeneSymbol')
+
+estimateScore("results/estimate/GBM_10412genes.gct", "results/estimate/GBM_estimate_score.gct", platform="illumina") #check to make sure this is the correct platform
+
+estimate_scores <- read.delim(file="results/estimate/GBM_estimate_score.gct", skip=2)
+View(estimate_scores)
