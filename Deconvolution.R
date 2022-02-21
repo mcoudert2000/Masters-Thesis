@@ -51,5 +51,20 @@ filterCommonGenes(input.f = 'data/estimate_normalized_counts.txt',
 
 estimateScore("results/estimate/GBM_10412genes.gct", "results/estimate/GBM_estimate_score.gct", platform="illumina") #check to make sure this is the correct platform
 
-estimate_scores <- read.delim(file="results/estimate/GBM_estimate_score.gct", skip=2)
-View(estimate_scores)
+plotPurity(scores = "results/estimate/GBM_estimate_score.gct", platform = 'affymetrix')
+
+estimate_scores <- read.delim(file="results/estimate/GBM_estimate_score.gct", skip=2, quote = " ")[,1:71]
+
+estimate_scores <- t(estimate_scores)[2:71,]
+colnames(estimate_scores) <- estimate_scores[1,]
+estimate_scores <- as.data.frame(estimate_scores[2:70,])
+estimate_scores[] <- lapply(estimate_scores, as.numeric)
+
+require(gghighlight)
+
+ggplot(estimate_scores[10:69,]) +
+  geom_point(aes(x = StromalScore, y = ImmuneScore, col = 'TCGA')) +
+  geom_point(data = estimate_scores[1:9,], aes(x = StromalScore, y = ImmuneScore, col = 'ASTRID\'s'))
+
+
+
