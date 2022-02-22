@@ -60,7 +60,7 @@ colnames(estimate_scores) <- estimate_scores[1,]
 estimate_scores <- as.data.frame(estimate_scores[2:70,])
 estimate_scores[] <- lapply(estimate_scores, as.numeric)
 
-#Plot 
+#Plots
 ggplot(estimate_scores[10:69,]) +
   geom_point(aes(x = StromalScore, y = ImmuneScore, col = 'TCGA')) +
   geom_point(data = estimate_scores[1:9,], aes(x = StromalScore, y = ImmuneScore, col = 'ASTRID\'s')) +
