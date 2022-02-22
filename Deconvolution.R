@@ -41,9 +41,10 @@ estimate_data <- read.csv('data/combined_normalized_counts.csv')
 removed_duplicates <- merge_duplicate_rows(estimate_data[,2:71])
 removed_duplicates$GeneSymbol <- rownames(removed_duplicates)
 
+#Normalize to log2
+removed_duplicates[,1:69] <- log2(removed_duplicates[,1:69] + 1)
+
 write.table(removed_duplicates, file = 'data/estimate_normalized_counts.txt', sep = '\t', quote = F)
-eset <- ExpressionSet(assayData = as.matrix(removed_duplicates))
-View(eset)
 
 filterCommonGenes(input.f = 'data/estimate_normalized_counts.txt', 
                   output.f = 'results/estimate/GBM_10412genes.gct',
@@ -51,7 +52,7 @@ filterCommonGenes(input.f = 'data/estimate_normalized_counts.txt',
 
 estimateScore("results/estimate/GBM_10412genes.gct", "results/estimate/GBM_estimate_score.gct", platform="illumina") #check to make sure this is the correct platform
 
-plotPurity(scores = "results/estimate/GBM_estimate_score.gct", platform = 'affymetrix')
+#plotPurity(scores = "results/estimate/GBM_estimate_score.gct", platform = 'affymetrix')
 
 estimate_scores <- read.delim(file="results/estimate/GBM_estimate_score.gct", skip=2, quote = " ")[,1:71]
 
@@ -59,6 +60,8 @@ estimate_scores <- t(estimate_scores)[2:71,]
 colnames(estimate_scores) <- estimate_scores[1,]
 estimate_scores <- as.data.frame(estimate_scores[2:70,])
 estimate_scores[] <- lapply(estimate_scores, as.numeric)
+
+estimate_scores$tumor_purity <- cos(estimate_scores$ESTIMATEScore *0.0001467884+0.6049872018) #https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3826632/
 
 #Plots
 ggplot(estimate_scores[10:69,]) +
@@ -73,4 +76,7 @@ ggplot(estimate_scores[10:69,]) +
   geom_hline(yintercept = median(estimate_scores$ESTIMATEScore), linetype = 2)
 
 
+ggplot(estimate_scores) +
+  geom_boxplot(aes(x = tumor_purity)) +
+  coord_flip()
 
