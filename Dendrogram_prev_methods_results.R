@@ -1,5 +1,7 @@
 require(dendextend)
 require(graphics)
+#Try with these genes as well (table 1): https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5940130/
+
 
 dendrogram_results <- read.csv('results/prev_methods_results.csv')
 rownames(dendrogram_results) <- dendrogram_results$X

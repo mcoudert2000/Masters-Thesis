@@ -1,6 +1,7 @@
 require("FactoMineR")
 require("factoextra")
 
+
 PCA_data <- read.csv('data/combined_normalized_counts_filtered.csv')
 rownames(PCA_data) <- PCA_data$GENENAME
 PCA_data <- PCA_data %>%
@@ -15,6 +16,9 @@ fviz_pca_ind(pca_plot, col.ind = 'red', geom.ind = 'point', geom.var = F, repel 
   geom_text(data = d[1:9,], aes(x = Dim.1, y = Dim.2, label = label), hjust = -.1, vjust =-.1)
 
 #CLUSTER
+
+#USE SIG-CLUST TO EVALUATE CLUSTER SIGNIFIGANCE
+#Try sillouette as well
 kplots2 <- fviz_cluster(kmeans(PCA_data, centers = 2), data = PCA_data, labelsize = 0) +
   geom_text(data = d[1:9,], aes(x = Dim.1, y = Dim.2, label = label))
 kplots3 <- fviz_cluster(kmeans(PCA_data, centers = 3), data = PCA_data, labelsize = 0) +
