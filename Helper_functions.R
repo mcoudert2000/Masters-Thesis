@@ -15,8 +15,3 @@ merge_duplicate_rows <- function(dat) {
   rownames(out) <- out$GENENAME
   return(dplyr::select(out, -GENENAME))
 }
-
-#test case
-test <- data.frame(GENENAME = c('A',"B","C","A","C"), s1 = 1:5, s2 = 2:6)
-test
-merge_duplicate_rows(test)
