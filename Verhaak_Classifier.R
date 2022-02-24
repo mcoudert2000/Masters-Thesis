@@ -4,6 +4,8 @@
 #There is no overlap between genesets
 
 
+
+
 m = read.table("data/verhaak/unifiedScaled.txt", header = TRUE, row.names = 1, check.names = FALSE)
 m = as.matrix(m)
 
@@ -18,10 +20,61 @@ m = m[, names(subtype)]
 centroids <- dplyr::select(read.csv("data/verhaak/ClaNC840_centroids.csv"), -Composite_chr_coords)
 
 
+
+astrid_data <- read.csv('data/Astrid_normalized_counts.csv') 
+
+astrid_data <- astrid_data %>%
+  filter(GENENAME %in% centroids$Gene.Symbol)
+
+astrid_data <- merge_duplicate_rows(astrid_data) %>%
+  dplyr::select(-X) %>% t() %>% scale()
+
+
+colnames(astrid_data) <- gsub("-", '.', colnames(astrid_data))
+
+
+dim(astrid_data)
+
+
+astrid_categories <- rep('NC', length(astrid_data[,1]))
+for(i in 1:length(astrid_data[,1])) { #patient loop
+  pro_dist <- 0
+  class_dist <- 0
+  mech_dist <- 0
+  neur_dist <- 0
+  for(g in colnames(astrid_data)) {
+    if(length(verhaak_centroids['Proneural', g]) == 0) {
+      print(g)
+    }
+    pro_dist = pro_dist + abs(verhaak_centroids['Proneural', g] - astrid_data[i, g])
+    class_dist = class_dist + abs(verhaak_centroids['Classical', g] - astrid_data[i, g])
+    mech_dist = mech_dist + abs(verhaak_centroids['Mesenchymal', g] - astrid_data[i, g])
+    neur_dist = neur_dist + abs(verhaak_centroids['Neural', g] - astrid_data[i, g])
+   # print(pro_dist)
+  }
+  min_dist <- min(c(pro_dist, class_dist, mech_dist, neur_dist))
+  if(pro_dist == min_dist) {
+    astrid_categories[i] <- "Proneural"
+  }
+  if(class_dist == min_dist) {
+    astrid_categories[i] <- "Classical"
+  }
+  if(mech_dist == min_dist) {
+    astrid_categories[i] <- "Mesenchymal"
+  }
+  if(neur_dist == min_dist) {
+    astrid_categories[i] <- "Neural"
+  }
+}
+astrid_categories
+
+
+
+
+
+
+
 summary(centroids)
-
-#calculate distance from each centroid and assign it to the minimum
-
 
 
 library(tidyr)
