@@ -76,11 +76,11 @@ categories$patient <- rownames(categories)
 subtype <- data.frame(subtype)
 subtype$patient <- rownames(subtype)
 
-results <- dplyr::inner_join(categories, subtype, by = 'patient') %>%
+verhaak_results <- dplyr::inner_join(categories, subtype, by = 'patient') %>%
   dplyr::select(c('patient', 'categories', 'subtype'))
 
 #accuracy for prediction
-sum(results$categories == results$subtype)/length(results$categories)
+sum(verhaak_results$categories == verhaak_results$subtype)/length(verhaak_results$categories)
 
 
 ### Applying same classifier to Astrid's data
@@ -116,5 +116,7 @@ for(i in 1:length(astrid_data[,1])) { #patient loop
   }
 }
 
-data.frame(sample = rownames(astrid_data), category = astrid_categories)
+astrid_verhaak_results <- data.frame(sample = rownames(astrid_data), category = astrid_categories)
+
+astrid_verhaak_results
 
