@@ -10,6 +10,7 @@ subtype = structure(unlist(subtype[1, -(1:2)]), names = colnames(subtype)[-(1:2)
 
 m = m[, names(subtype)]
 
+
 #Attempt to cluster on centroids provided by study
 centroids <- dplyr::select(read.csv("data/verhaak/ClaNC840_centroids.csv"), -Composite_chr_coords)
 
