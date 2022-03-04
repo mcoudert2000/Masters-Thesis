@@ -120,4 +120,3 @@ for(i in 1:length(astrid_data[,1])) { #patient loop
 astrid_verhaak_results <- data.frame(sample = rownames(astrid_data), category = astrid_categories)
 
 astrid_verhaak_results
-

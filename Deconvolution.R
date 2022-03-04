@@ -1,5 +1,7 @@
 #remotes::install_github("icbi-lab/immunedeconv")
 require(immunedeconv)
+require(ggplot2)
+require(estimate)
 
 set_cibersort_binary("/Users/matthewcoudert/Maths/2021:22/Masters-Thesis/data/Cibersort/CIBERSORT.R")
 set_cibersort_mat("/Users/matthewcoudert/Maths/2021:22/Masters-Thesis/data/Cibersort/LM22.txt")
@@ -30,11 +32,8 @@ binary_results[1:9]
 #Not finished yet
 rforge <- "http://r-forge.r-project.org"
 install.packages("estimate", repos=rforge, dependencies=TRUE)
-require(estimate)
-library(help = "estimate")
 
-deconvolution_data
-?filterCommonGenes
+library(help = "estimate")
 estimate_data <- read.csv('data/combined_normalized_counts.csv')
 
 
@@ -80,3 +79,30 @@ ggplot(estimate_scores) +
   geom_boxplot(aes(x = tumor_purity)) +
   coord_flip()
 
+
+
+### Linear Equation Solver
+
+#Idea: RNA_tot = RNA_tumor * tumor_content + RNA_non_tumor * (1 - tumor_content)
+
+lin_equation_data <- read.csv('data/Astrid_normalized_counts.csv')
+
+rownames(lin_equation_data) <- lin_equation_data$X
+
+lin_equation_data <- lin_equation_data[,3:11]
+lin_equation_data$R2A
+
+View(deconv_res_xcell)
+
+lin_equation_data$R2C
+estimate_scores[c(3,5),]$tumor_purity
+
+
+tumor_rna <- t(solve(A,b))
+
+colnames(tumor_rna) <- c("R2A", "R2C")
+rownames(tumor_rna) <- rownames(lin_equation_data)
+
+View(tumor_rna)
+
+(lin_equation_data$R2A * estimate_scores[3,]$tumor_purity) / (2 * estimate_scores[3,]$tumor_purity - 1)

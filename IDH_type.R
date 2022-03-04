@@ -8,8 +8,6 @@ mutant_list <- read.table('data/verhaak/IDH1-Mutated_Samples.txt', header = T)
 
 transcription_data <- read.table("data/verhaak/unifiedScaled.txt", header = TRUE, row.names = 1, check.names = FALSE)
 
-
-
 colnames(transcription_data) <- substr(colnames(transcription_data), start = 1, stop = 12)
 
 #Check that all are covered

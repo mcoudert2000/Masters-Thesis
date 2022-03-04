@@ -59,7 +59,7 @@ counts_for_TCGA <- genes_normalized %>%
   dplyr::filter(GENEID %in% annot$GENEID) %>%
   mutate(GENENAME = annot$SYMBOL[match(GENEID, annot$GENEID)]) %>%
   dplyr::select(GENENAME, everything())
-
+dim(counts_for_TCGA)
 
 #Write to a file for access later
 write.csv(counts_for_TCGA, "data/TCGA_normalized_counts.csv")
