@@ -21,6 +21,11 @@ CGGA_expression <- merge_duplicate_rows(CGGA_expression)
 dim(CGGA_expression)
 dim(CGGA_clinical)
 
+CGGA_data <- DGEList(counts = CGGA_expression, samples = CGGA_clinical,
+                     group = CGGA_clinical$IDH_mutation_status)
+
+View(CGGA_data)
+
 save(CGGA_expression, CGGA_clinical, file = 'data/CGGA/CGGA_data.RDATA')
 
 
