@@ -51,5 +51,9 @@ rownames(CGGA_tfit)[CGGA_common]
 
 diff_expressed_genes <- list(TCGA = rownames(TCGA_tfit)[TCGA_common], CGGA = rownames(CGGA_tfit)[CGGA_common])
 
+save(diff_expressed_genes, file = 'data/TCGA_CGGA_diff_expressed_genes.rdata')
+
 rownames(CGGA_tfit)[CGGA_common] %in% rownames(TCGA_tfit)[TCGA_common]
+
+diff_expressed_genes
 

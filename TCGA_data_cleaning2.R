@@ -34,7 +34,7 @@ gbm.exp <- GDCprepare(
   save.filename = "gbmExp.rda"
   
 )
-View(gbm.exp)
+
 
 TCGA_samples <- data.frame(patient = gbm.exp$patient,
                            age_index = gbm.exp$age_at_index,
@@ -55,7 +55,6 @@ TCGA_counts <- TCGA_counts[,!duplicated(colnames(TCGA_counts))]
 TCGA_samples <- TCGA_samples[!duplicated(TCGA_samples$patient),]
 
 TCGA_counts <- TCGA_counts[!duplicated(rownames(TCGA_counts)),]
-View(TCGA_counts)
 
 dim(TCGA_counts) #Check to see if dimensions make sense
 dim(TCGA_samples)
@@ -63,6 +62,5 @@ dim(TCGA_samples)
 TCGA_data <- DGEList(counts = TCGA_counts, samples = TCGA_samples,
                      group = TCGA_samples$IDH)
 
-View(TCGA_data)
 
 save(TCGA_data, file = 'data/TCGA_data_full.rdata')
