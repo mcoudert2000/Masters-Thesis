@@ -63,4 +63,4 @@ TCGA_data <- DGEList(counts = TCGA_counts, samples = TCGA_samples,
 
 View(TCGA_data)
 
-saveRDS(TCGA_data, 'data/TCGA_data_full.RDA')
+save(TCGA_data, file = 'data/TCGA_data_full.rdata')
