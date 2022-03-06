@@ -43,6 +43,8 @@ TCGA_samples <- data.frame(patient = gbm.exp$patient,
                            subtype = gbm.exp@colData@listData[["paper_Transcriptome.Subtype"]])
 TCGA_counts <- gbm.exp@assays@data@listData[["raw_count"]]
 
+
+
 TCGA_counts <- TCGA_counts[, !is.na(TCGA_samples$IDH)]
 TCGA_samples <- TCGA_samples[!is.na(TCGA_samples$IDH),]
   

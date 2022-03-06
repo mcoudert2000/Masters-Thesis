@@ -3,13 +3,14 @@ GR_Sig <- c('GRIA2', 'RYR3')
 HOSS_Sig <- c('HOXC10', 'OSMR', 'SCARA3', 'SLC39A10')
 LMSZ_Sig <- c('LHX2', 'MEOX2', 'SNAI2', 'ZNF22')
 PRGIT_Sig <- c('PTPRN', 'RGS14', 'G6PC3', 'IGFBP2', 'TIMP4')
-DRCHP_Sig <- c('DES', 'RANBP17', 'CLEC5A', 'HOXC11', 'POSTN')
+DRCHP_Sig <- c('DES', 'RANBP17', 'CLEC5A', 'HOXC11', 'POSTN') #removed as HOXC11 is not in CGGA dataset
 BHLNSX_Sig <- c('BPIFB2', 'HOXA13', 'LRRC10', 'NELL1', 'SDR16C5', 'XIRP2')
 genes_I_care_about <- c(GR_Sig, HOSS_Sig, LMSZ_Sig, PRGIT_Sig, DRCHP_Sig, BHLNSX_Sig)
 
 #Load in data
-key_genes_data <- read.csv(file = 'data/combined_normalized_counts_filtered.csv') 
+key_genes_data <- data.frame(combined_data_normalized$E[rownames(combined_data_normalized$E) %in% genes_I_care_about,])
 
+key_genes_data$GENENAME <- rownames(key_genes_data)
 ### Prev Methods -----
 prev_method_calculator <- function(signature, coef, dat) {
   out <- 0
@@ -37,21 +38,17 @@ PRGIT_coef <- list(PTPRN = 0.50894, RGS14 = 0.54671,
                    G6PC3 = 1.20753, IGFBP2 = 0.25845, TIMP4 = -0.20684)
 PRGIT_sig_out <- prev_method_calculator(PRGIT_Sig, PRGIT_coef, key_genes_data)
 
-#### DRCHP-Sig------
-DRCHP_Sig
-DRCHP_coef <- list(DES = 0.5536, RANBP17 = -0.7340, 
-                   CLEC5A = 0.0995, HOXC11 = 0.2810, POSTN = 0.0566)
-DRCHP_sig_out <- prev_method_calculator(DRCHP_Sig, DRCHP_coef, key_genes_data)
+#
 
 #### BHLNSX-Sig------
 BHLNSX_Sig
 BHLNSX_coef <- list(BPIFB2 = -0.0881, HOXA13 = -0.0854, LRRC10 = -0.0614, NELL1 = -0.151, SDR16C5 = -0.0945, XIRP2 = -0.1441)
-BHLNSX_sig_out <- prev_method_calculator(DRCHP_Sig, DRCHP_coef, key_genes_data)
+BHLNSX_sig_out <- prev_method_calculator(BHLNSX_Sig, BHLNSX_coef, key_genes_data)
 
-prev_methods_results <- data.frame(GR = t(GR_sig_out), HOSS = t(HOSS_sig_out), PRGIT = t(PRGIT_sig_out),
-                      DRCHP = t(DRCHP_sig_out), BHLNSX = t(BHLNSX_sig_out))
+prev_methods_results <- data.frame(GR = t(GR_sig_out), HOSS = t(HOSS_sig_out),
+                                   PRGIT = t(PRGIT_sig_out), BHLNSX = t(BHLNSX_sig_out))
 
 prev_methods_results
 
-write.csv(prev_methods_results, file = 'results/prev_methods_results.csv')
+save(prev_methods_results, file = 'results/prev_methods_results.rdata')
 
