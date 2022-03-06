@@ -21,6 +21,8 @@ CGGA_contrasts <- makeContrasts(MutantvsIDH = IDH_Mutant - IDH_WT, levels = coln
 TCGA_v <- voom(TCGA_data, TCGA_design) #This transforms the data to log2 cpm
 CGGA_v <- voom(CGGA_data, CGGA_design)
 
+save(TCGA_v, CGGA_v, file = 'data/normalized_TCGA_CGGA_IDH.rdata')
+
 TCGA_vfit <- lmFit(TCGA_v, TCGA_design)
 TCGA_vfit <- contrasts.fit(TCGA_vfit, contrasts=TCGA_contrasts)
 TCGA_efit <- eBayes(TCGA_vfit)

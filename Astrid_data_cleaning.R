@@ -1,4 +1,5 @@
 require(dplyr)
+require(edgeR)
 #Load in our data
 load('data/GeneCounts.RData')
 time <- as.factor(c(2, 2, 3, 3, 3, 2, 1, 1, 1))
@@ -6,7 +7,7 @@ sample <- c("A002", "A004", "A005", "A007", "A012", "A013", "A014", "A016", "A01
 label <- c('R1A', 'R1B', 'R2A', 'R2B', 'R2C', 'R1C', 'PA', 'PB', 'PC')
 tumor_content <- c(0.26, .93, .90, .71, .85, .87, .24, .26, .24)
 sample_data <- data.frame(time = time, sample = sample, label = label, tumor_content = tumor_content)
-
+rownames(sample_data) <- sample_data$label
 #Swap gene names as before
 prep_data <- function(txi, tx2gene) {
   txi_out <- txi
@@ -32,6 +33,11 @@ prep_data <- function(txi, tx2gene) {
 
 #Load and normalize data to CPM
 prev_data <- prep_data(txi, tx2gene) 
+
+Astrid_data <- DGEList(counts = prev_data, samples = sample_data)
+colnames(Astrid_data) <- Astrid_data$samples$label
+save(Astrid_data, file = 'data/Astrid_data_counts.rdata')
+
 normalized_prev_data <- prev_data
 for(i in 1:length(prev_data[1,])) {
   normalized_prev_data[, i] <- prev_data[, i] * (1e6 / sum(prev_data[, i]))
@@ -46,6 +52,7 @@ prev_data_frame <- normalized_prev_data %>%
 #Label our data for later analysis
 colnames(prev_data_frame) <- c("GENENAME", sample_data$label) 
 
+prev_data_frame
 write.csv(prev_data_frame, file = 'data/Astrid_normalized_counts.csv')
 key_genes_prev_data_frame <- prev_data_frame %>%
   dplyr::filter(GENENAME %in% genes_I_care_about)
