@@ -1,7 +1,6 @@
 require("FactoMineR")
 require("factoextra")
 
-
 PCA_data <- read.csv('data/combined_normalized_counts_filtered.csv')
 rownames(PCA_data) <- PCA_data$GENENAME
 PCA_data <- PCA_data %>%
