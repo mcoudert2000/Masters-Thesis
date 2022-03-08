@@ -93,9 +93,6 @@ for(i in 1:length(astrid_data[,1])) { #patient loop
   mech_dist <- 0
   neur_dist <- 0
   for(g in colnames(astrid_data)) {
-    if(length(verhaak_centroids['Proneural', g]) == 0) {
-      print(g)
-    }
     pro_dist = pro_dist + abs(verhaak_centroids['Proneural', g] - astrid_data[i, g])
     class_dist = class_dist + abs(verhaak_centroids['Classical', g] - astrid_data[i, g])
     mech_dist = mech_dist + abs(verhaak_centroids['Mesenchymal', g] - astrid_data[i, g])
@@ -120,3 +117,10 @@ for(i in 1:length(astrid_data[,1])) { #patient loop
 astrid_verhaak_results <- data.frame(sample = rownames(astrid_data), category = astrid_categories)
 
 astrid_verhaak_results
+
+#Plotting Clusters
+d <- data.frame(scale(PCA(astrid_data, graph = F)$ind$coord))
+
+ggplot(d) +
+  geom_point(aes(x = Dim.1, y = Dim.2, shape = astrid_verhaak_results$category)) +
+  geom_text(aes(x = Dim.1, y = Dim.2, label = astrid_verhaak_results$sample), hjust = -.1, vjust = -.1)

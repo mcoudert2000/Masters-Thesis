@@ -1,38 +1,68 @@
 require("FactoMineR")
 require("factoextra")
+require(dplyr)
+require(cluster)
 
-PCA_data <- read.csv('data/combined_normalized_counts_filtered.csv')
-rownames(PCA_data) <- PCA_data$GENENAME
-PCA_data <- PCA_data %>%
-  dplyr::select(-c("X", "GENENAME")) %>% scale() %>% t()
+GR_Sig <- c('GRIA2', 'RYR3')
+HOSS_Sig <- c('HOXC10', 'OSMR', 'SCARA3', 'SLC39A10')
+LMSZ_Sig <- c('LHX2', 'MEOX2', 'SNAI2', 'ZNF22')
+PRGIT_Sig <- c('PTPRN', 'RGS14', 'G6PC3', 'IGFBP2', 'TIMP4')
+DRCHP_Sig <- c('DES', 'RANBP17', 'CLEC5A', 'HOXC11', 'POSTN') #removed as HOXC11 is not in CGGA dataset
+BHLNSX_Sig <- c('BPIFB2', 'HOXA13', 'LRRC10', 'NELL1', 'SDR16C5', 'XIRP2')
+genes_I_care_about <- c(GR_Sig, HOSS_Sig, LMSZ_Sig, PRGIT_Sig, BHLNSX_Sig)
 
-pca_plot <- PCA(PCA_data, scale.unit = TRUE, graph = FALSE)
+load('data/combined_data.rdata')
+
+PCA_key_genes_data <- combined_data_normalized
+PCA_key_genes_data$E <- PCA_key_genes_data$E[rownames(combined_data_normalized$E) %in% genes_I_care_about,]
+rownames(PCA_key_genes_data$E)
+
+pca_plot <- PCA(t(PCA_key_genes_data$E), scale.unit = TRUE, graph = FALSE)
 
 d <- as.data.frame(pca_plot$ind$coord)
-d$label <- rownames(PCA_data)
+d$label <- colnames(PCA_key_genes_data)
 
-fviz_pca_ind(pca_plot, col.ind = 'red', geom.ind = 'point', geom.var = F, repel = T) +
-  geom_text(data = d[1:9,], aes(x = Dim.1, y = Dim.2, label = label), hjust = -.1, vjust =-.1)
+fviz_pca_ind(pca_plot, col.ind = F, geom.ind = F, geom.var = F, repel = T, axes = c(2,3)) +
+  geom_point(aes(x = d$Dim.2, y = d$Dim.3, col = PCA_key_genes_data$targets$source)) +
+  geom_text(data = d[1:9,], aes(x = Dim.2, y = Dim.3, label = label), hjust = -.1, vjust =-.1)
 
 #CLUSTER
+t(PCA_key_genes_data$E)
+d
 
 #USE SIG-CLUST TO EVALUATE CLUSTER SIGNIFIGANCE
 #Try sillouette as well
-kplots2 <- fviz_cluster(kmeans(PCA_data, centers = 2), data = PCA_data, labelsize = 0) +
-  geom_text(data = d[1:9,], aes(x = Dim.1, y = Dim.2, label = label))
-kplots3 <- fviz_cluster(kmeans(PCA_data, centers = 3), data = PCA_data, labelsize = 0) +
-  geom_text(data = d[1:9,], aes(x = Dim.1, y = Dim.2, label = label))
-kplots4 <- fviz_cluster(kmeans(PCA_data, centers = 4), data = PCA_data,labelsize = 0) +
-  geom_text(data = d[1:9,], aes(x = Dim.1, y = Dim.2, label = label))
-kplots5 <- fviz_cluster(kmeans(PCA_data, centers = 5), data = PCA_data, labelsize = 0) +
-  geom_text(data = d[1:9,], aes(x = Dim.1, y = Dim.2, label = label))
+kclust_pca_data <- scale(t(PCA_key_genes_data$E))
+
+fviz_nbclust(kclust_pca_data, kmeans, method = "wss")
+
+gap_stat <- clusGap(kclust_pca_data,
+                    FUN = kmeans,
+                    nstart = 25,
+                    K.max = 10,
+                    B = 50)
+
+fviz_gap_stat(gap_stat)
+
+
+#plot number of clusters vs. gap statistic
+fviz_gap_stat(gap_stat)
+
+kplots2 <- fviz_cluster(kmeans(kclust_pca_data, centers = 2), data = kclust_pca_data, labelsize = 10*as.numeric(PCA_key_genes_data$targets$source == "Astrid"), repel = T)
+kplots3 <- fviz_cluster(kmeans(kclust_pca_data, centers = 3), data = kclust_pca_data, labelsize = 10*as.numeric(PCA_key_genes_data$targets$source == "Astrid"), repel = T)
+kplots4 <- fviz_cluster(kmeans(kclust_pca_data, centers = 4), data = kclust_pca_data, labelsize = 10*as.numeric(PCA_key_genes_data$targets$source == "Astrid"), repel = T)
+kplots5 <- fviz_cluster(kmeans(kclust_pca_data, centers = 5), data = kclust_pca_data, labelsize = 10*as.numeric(PCA_key_genes_data$targets$source == "Astrid"), repel = T) 
+
+kplots9 <- fviz_cluster(kmeans(kclust_pca_data, centers = 9), data = kclust_pca_data, labelsize = 10*as.numeric(PCA_key_genes_data$targets$source == "Astrid"), repel = T) 
+kplots9
 
 require(ggpubr)
 kmeans_plot <- ggarrange(kplots2, kplots3, kplots4, kplots5, labels = c("2","3","4","5"))
-
+kmeans_plot
 #save plot
 png(filename = "plots/KMeans Clustering on Results from Various Gene Signature Studies.png",
     width = 800, height = 400)
 plot(kmeans_plot, main = "Kmeans Clustering on Results from Various Gene Signature Studies")
 dev.off()
+
 

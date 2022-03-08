@@ -5,9 +5,10 @@ LMSZ_Sig <- c('LHX2', 'MEOX2', 'SNAI2', 'ZNF22')
 PRGIT_Sig <- c('PTPRN', 'RGS14', 'G6PC3', 'IGFBP2', 'TIMP4')
 DRCHP_Sig <- c('DES', 'RANBP17', 'CLEC5A', 'HOXC11', 'POSTN') #removed as HOXC11 is not in CGGA dataset
 BHLNSX_Sig <- c('BPIFB2', 'HOXA13', 'LRRC10', 'NELL1', 'SDR16C5', 'XIRP2')
-genes_I_care_about <- c(GR_Sig, HOSS_Sig, LMSZ_Sig, PRGIT_Sig, DRCHP_Sig, BHLNSX_Sig)
+genes_I_care_about <- c(GR_Sig, HOSS_Sig, LMSZ_Sig, PRGIT_Sig, BHLNSX_Sig)
 
 #Load in data
+load('data/combined_data.rdata')
 key_genes_data <- data.frame(combined_data_normalized$E[rownames(combined_data_normalized$E) %in% genes_I_care_about,])
 
 key_genes_data$GENENAME <- rownames(key_genes_data)
@@ -51,4 +52,5 @@ prev_methods_results <- data.frame(GR = t(GR_sig_out), HOSS = t(HOSS_sig_out),
 prev_methods_results
 
 save(prev_methods_results, file = 'results/prev_methods_results.rdata')
+
 
