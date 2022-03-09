@@ -1,12 +1,10 @@
 require(dendextend)
 require(graphics)
+require(dplyr)
 #Try with these genes as well (table 1): https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5940130/
 
-
-dendrogram_results <- read.csv('results/prev_methods_results.csv')
-rownames(dendrogram_results) <- dendrogram_results$X
-dendrogram_results <- dendrogram_results %>%
-  dplyr::select(-'X') %>% scale()
+print(load('results/prev_methods_results.rdata'))
+dendrogram_results <- scale(prev_methods_results)
 
 #Calculates the distance between points
 hc <- dendrogram_results %>% dist() %>% hclust()
@@ -17,17 +15,23 @@ colLab <- function(n) {
   if(is.leaf(n)) {
     #I take the current attributes
     a = attributes(n)
+    print(a)
     #I deduce the line in the original data, and so the treatment and the specie.
     treatment = a$label
-    if(!grepl("X", treatment)) {
-      col_treatment = 'red'
-      lab.cex = 1
+    if (grepl("CGGA", treatment)) {
+      col_treatment = 'green'
+      lab.cex = 0.01
     } else {
+    if (grepl("TCGA", treatment)) {
       col_treatment = 'blue'
       lab.cex = 0.01
+    } else{
+      col_treatment = 'red'
+      lab.cex = 1
+    }
     }
     #Modification of leaf attribute
-    attr(n,"nodePar") <- c(a$nodePar,list(cex=1.5,lab.cex=lab.cex,pch=20,col=col_treatment,lab.font=1))
+    attr(n,"nodePar") <- c(a$nodePar,list(lab.cex=lab.cex,pch=10,col=col_treatment,lab.font=1))
   }
   return(n)
 }
