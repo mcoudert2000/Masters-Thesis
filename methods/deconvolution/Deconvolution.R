@@ -7,9 +7,10 @@ set_cibersort_binary("/Users/matthewcoudert/Maths/2021:22/Masters-Thesis/data/Ci
 set_cibersort_mat("/Users/matthewcoudert/Maths/2021:22/Masters-Thesis/data/Cibersort/LM22.txt")
 
 #Load full dataset
-deconvolution_data <- as.matrix(read.csv('data/combined_normalized_counts.csv'))
-rownames(deconvolution_data) <- deconvolution_data[,'GENENAME']
-deconvolution_data <- deconvolution_data[,3:71]
+load('data/combined_data.rdata')
+
+deconvolution_data <- as.matrix(combined_data_normalized$E)
+
 #View(deconvolution_data)
 
 deconv_res_cibersort <- deconvolute(deconvolution_data, method = 'cibersort')
@@ -33,17 +34,12 @@ binary_results[1:9]
 rforge <- "http://r-forge.r-project.org"
 install.packages("estimate", repos=rforge, dependencies=TRUE)
 
-library(help = "estimate")
-estimate_data <- read.csv('data/combined_normalized_counts.csv')
+#library(help = "estimate")
+load('data/combined_data.rdata')
+estimate_data <- combined_data_normalized$E
 
+write.table(estimate_data, file = 'data/estimate_normalized_counts.txt', sep = '\t', quote = F)
 
-removed_duplicates <- merge_duplicate_rows(estimate_data[,2:71])
-removed_duplicates$GeneSymbol <- rownames(removed_duplicates)
-
-#Normalize to log2
-removed_duplicates[,1:69] <- log2(removed_duplicates[,1:69] + 1)
-
-write.table(removed_duplicates, file = 'data/estimate_normalized_counts.txt', sep = '\t', quote = F)
 
 filterCommonGenes(input.f = 'data/estimate_normalized_counts.txt', 
                   output.f = 'results/estimate/GBM_10412genes.gct',
@@ -53,56 +49,50 @@ estimateScore("results/estimate/GBM_10412genes.gct", "results/estimate/GBM_estim
 
 #plotPurity(scores = "results/estimate/GBM_estimate_score.gct", platform = 'affymetrix')
 
-estimate_scores <- read.delim(file="results/estimate/GBM_estimate_score.gct", skip=2, quote = " ")[,1:71]
+estimate_scores <- read.delim(file="results/estimate/GBM_estimate_score.gct", skip=2, quote = " ")[,1:400]
 
-estimate_scores <- t(estimate_scores)[2:71,]
+estimate_scores <- t(estimate_scores)
 colnames(estimate_scores) <- estimate_scores[1,]
-estimate_scores <- as.data.frame(estimate_scores[2:70,])
+estimate_scores <- as.data.frame(estimate_scores[3:400,])
 estimate_scores[] <- lapply(estimate_scores, as.numeric)
 
 estimate_scores$tumor_purity <- cos(estimate_scores$ESTIMATEScore *0.0001467884+0.6049872018) #https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3826632/
 
+dim(estimate_scores)
 #Plots
-ggplot(estimate_scores[10:69,]) +
-  geom_point(aes(x = StromalScore, y = ImmuneScore, col = 'TCGA')) +
+ggplot(estimate_scores) +
+  geom_point(data = estimate_scores[10:248,], aes(x = StromalScore, y = ImmuneScore, col = 'CGGA')) +
   geom_point(data = estimate_scores[1:9,], aes(x = StromalScore, y = ImmuneScore, col = 'ASTRID\'s')) +
+  geom_point(data = estimate_scores[249:398,], aes(x = StromalScore, y = ImmuneScore, col = 'TCGA')) +
   geom_smooth(data = estimate_scores, aes(x = StromalScore, y = ImmuneScore), method = lm, se = T, linetype = 2, col = 'black') +
   ggtitle("Stromal Score vs Immune Score")
 
-ggplot(estimate_scores[10:69,]) +
-  geom_point(aes(x = 0, y = ESTIMATEScore, col = 'TCGA')) +
-  geom_point(data = estimate_scores[1:9,], aes(x = 0, y = ESTIMATEScore, col = 'ASTRID\'s')) +
+ggplot(estimate_scores[10:248,]) +
+  geom_point(aes(x = -1, y = ESTIMATEScore, col = 'CGGA'), alpha =0.3) +
+  geom_point(data = estimate_scores[1:9,], alpha = 0.3, aes(x = 0, y = ESTIMATEScore, col = 'ASTRID\'s')) +
+  geom_point(data = estimate_scores[249:398,],alpha =0.3, aes(x = 1, y = ESTIMATEScore, col = 'TCGA')) +
   geom_hline(yintercept = median(estimate_scores$ESTIMATEScore), linetype = 2)
 
 
 ggplot(estimate_scores) +
   geom_boxplot(aes(x = tumor_purity)) +
-  coord_flip()
-
+  coord_flip() 
 
 
 ### Linear Equation Solver
 
 #Idea: RNA_tot = RNA_tumor * tumor_content + RNA_non_tumor * (1 - tumor_content)
 
-lin_equation_data <- read.csv('data/Astrid_normalized_counts.csv')
 
-rownames(lin_equation_data) <- lin_equation_data$X
+R2A <- combined_data_normalized$E[,'R2A']
+R2C <- combined_data_normalized$E[,'R2C']
 
-lin_equation_data <- lin_equation_data[,3:11]
-lin_equation_data$R2A
+R2A_tp <- estimate_scores[c(3),]$tumor_purity
+R2C_tp <- estimate_scores[c(5),]$tumor_purity
 
-View(deconv_res_xcell)
+R2A_tp - R2C_tp
+c_RNA2 <- ( R2A - R2C + R2A_tp * R2C - R2C_tp * R2A ) / (R2A_tp - R2C_tp)
 
-lin_equation_data$R2C
-estimate_scores[c(3,5),]$tumor_purity
+#This is (theoretically) isolated cancer RNA
+c_RNA2
 
-
-tumor_rna <- t(solve(A,b))
-
-colnames(tumor_rna) <- c("R2A", "R2C")
-rownames(tumor_rna) <- rownames(lin_equation_data)
-
-View(tumor_rna)
-
-(lin_equation_data$R2A * estimate_scores[3,]$tumor_purity) / (2 * estimate_scores[3,]$tumor_purity - 1)
