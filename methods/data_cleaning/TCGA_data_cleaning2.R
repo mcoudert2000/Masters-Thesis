@@ -56,6 +56,7 @@ rownames(TCGA_counts) <- gsub('\\..*', '', rownames(TCGA_counts))
 TCGA_counts <- TCGA_counts[,!duplicated(colnames(TCGA_counts))]
 TCGA_samples <- TCGA_samples[!duplicated(TCGA_samples$patient),]
 
+#remove duplicate samples from the same patient
 TCGA_counts <- TCGA_counts[!duplicated(rownames(TCGA_counts)),]
 
 dim(TCGA_counts) #Check to see if dimensions make sense

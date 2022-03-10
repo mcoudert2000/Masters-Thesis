@@ -4,9 +4,8 @@ require(dplyr)
 
 load('data/Astrid_data_counts.rdata')
 load('data/TCGA_data_full.rdata')
-load('data/CGGA/CGGA_data.RDATA')
+print(load('data/CGGA/CGGA_data.RDATA'))
 
-CGGA_data <- DGEList(counts = CGGA_expression, samples = CGGA_clinical)
 
 colnames(Astrid_data$samples)
 colnames(CGGA_data$samples)
@@ -14,7 +13,6 @@ colnames(TCGA_data$samples)
 
 #Columns to keep: lib.size, sample, IDH
 
-?cbind
 A_samples <- Astrid_data$samples %>% dplyr::select(c('label', 'lib.size'))
 A_samples$IDH <- rep("Unknown", 9)
 colnames(A_samples) <- c("sample", "lib.size", "IDH")
@@ -58,5 +56,7 @@ combined_data_counts <- rbind(A_counts, T_counts, C_counts)
 combined_data <- DGEList(counts = t(combined_data_counts), samples = combined_data_samples)
 
 combined_data_normalized <- voom(combined_data)
+dim(combined_data_normalized)
+table(combined_data_normalized$targets$source)
 
 save(combined_data, combined_data_normalized, file = 'data/combined_data.rdata')
