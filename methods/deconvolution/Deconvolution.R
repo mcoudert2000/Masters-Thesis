@@ -32,7 +32,7 @@ binary_results[1:9]
 
 #Not finished yet
 rforge <- "http://r-forge.r-project.org"
-install.packages("estimate", repos=rforge, dependencies=TRUE)
+#install.packages("estimate", repos=rforge, dependencies=TRUE)
 
 #library(help = "estimate")
 load('data/combined_data.rdata')
@@ -59,7 +59,11 @@ estimate_scores[] <- lapply(estimate_scores, as.numeric)
 estimate_scores$tumor_purity <- cos(estimate_scores$ESTIMATEScore *0.0001467884+0.6049872018) #https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3826632/
 
 dim(estimate_scores)
+save(estimate_scores, file = 'results/estimate_scores.rdata')
+
 #Plots
+cor(estimate_scores$ImmuneScore, estimate_scores$StromalScore)
+
 ggplot(estimate_scores) +
   geom_point(data = estimate_scores[10:248,], aes(x = StromalScore, y = ImmuneScore, col = 'CGGA')) +
   geom_point(data = estimate_scores[1:9,], aes(x = StromalScore, y = ImmuneScore, col = 'ASTRID\'s')) +

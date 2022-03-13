@@ -1,5 +1,5 @@
 #Verhaak_classifier
-
+require(dplyr)
 m = read.table("data/verhaak/unifiedScaled.txt", header = TRUE, row.names = 1, check.names = FALSE)
 m = as.matrix(m)
 
@@ -85,7 +85,7 @@ sum(verhaak_results$categories == verhaak_results$subtype)/length(verhaak_result
 
 
 ### Applying same classifier to Astrid's data
-
+astrid_data <- scale(astrid_data)
 astrid_categories <- rep('NC', length(astrid_data[,1]))
 for(i in 1:length(astrid_data[,1])) { #patient loop
   pro_dist <- 0
@@ -119,8 +119,32 @@ astrid_verhaak_results <- data.frame(sample = rownames(astrid_data), category = 
 astrid_verhaak_results
 
 #Plotting Clusters
-d <- data.frame(scale(PCA(astrid_data, graph = F)$ind$coord))
+require(FactoMineR)
+require(factoextra)
+d <- data.frame((PCA(astrid_data, graph = F)$ind$coord))
 
+load('data/Astrid_data_counts.rdata')
+tumor_content <-Astrid_data$samples$tumor_content
 ggplot(d) +
-  geom_point(aes(x = Dim.1, y = Dim.2, shape = astrid_verhaak_results$category)) +
+  geom_point(aes(x = Dim.1, y = Dim.2, shape = astrid_verhaak_results$category, col =tumor_content)) +
   geom_text(aes(x = Dim.1, y = Dim.2, label = astrid_verhaak_results$sample), hjust = -.1, vjust = -.1)
+
+
+verhaak_viz_data <- (data.frame(PCA(verhaak_data, graph = F)$ind$coord))
+
+correctly_classified = ifelse(verhaak_results$categories == verhaak_results$categories,
+              'green', 'red')
+                   
+categories = verhaak_results$categories
+ggplot(verhaak_viz_data) + 
+  geom_point(aes(x = Dim.1, y = Dim.2, shape = categories, col = error_rate)) +
+  scale_color_manual(values = c('green3','red')) +
+  ggtitle('PCA Plot of Verhaak Classification')
+
+#Checking whether Tumor Content is a valuable metric for determining misclassification
+load('results/estimate_scores.rdata')
+
+misclassified <- verhaak_results[verhaak_results$categories != verhaak_results$subtype,]
+classified <- verhaak_results[verhaak_results$categories == verhaak_results$subtype,]
+rownames(estimate_scores) <- gsub('\\.', '-', rownames(estimate_scores))
+estimate_scores[rownames(estimate_scores) %in% substr(misclassified$patient, 1,12)]

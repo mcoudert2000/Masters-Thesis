@@ -4,7 +4,7 @@ require(dplyr)
 
 load('data/Astrid_data_counts.rdata')
 load('data/TCGA_data_full.rdata')
-print(load('data/CGGA/CGGA_data.RDATA'))
+load('data/CGGA/CGGA_data.RDATA')
 
 
 colnames(Astrid_data$samples)
@@ -32,7 +32,7 @@ T_samples$source <- rep("TCGA",length(T_samples[,1]))
 C_samples$source <- rep("CGGA",length(C_samples[,1]))
 
 
-combined_data_samples <- rbind(A_samples, C_samples, T_samples)
+combined_data_samples <- rbind(A_samples, T_samples, C_samples)
 combined_data_samples <- combined_data_samples %>% mutate(IDH = replace(IDH, IDH == "Wildtype", "WT"))
 
 combined_data_samples$IDH <- factor(combined_data_samples$IDH, levels = c("Unknown", "WT", "Mutant"))

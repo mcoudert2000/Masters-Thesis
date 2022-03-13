@@ -33,6 +33,9 @@ IDH_train$outcome <- outcome_train
 IDH_test <- data.frame(t(IDH_test$E))
 IDH_test$outcome <- outcome_test
 
+table(IDH_train$outcome)
+table(IDH_test$outcome)
+
 str(IDH_train)
 str(IDH_test)
 
@@ -46,7 +49,7 @@ x = training[,1:5]
 y = training$outcome
 
 
-model = train(x,y,'nb',trControl=trainControl(method='cv',number=5), metric = 'Neg Pred Value')
+model = train(x,y,'rpart',trControl=trainControl(method='cv',number=5))
 model
 confusionMatrix(predict(model, newdata = testing), testing$outcome)
 
