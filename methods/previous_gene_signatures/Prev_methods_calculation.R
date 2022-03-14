@@ -1,11 +1,12 @@
 require(dplyr)
 GR_Sig <- c('GRIA2', 'RYR3')
+NIM_Sig <- c('NRG1', 'ITGA3', 'MAP1LC3A')
 HOSS_Sig <- c('HOXC10', 'OSMR', 'SCARA3', 'SLC39A10')
 LMSZ_Sig <- c('LHX2', 'MEOX2', 'SNAI2', 'ZNF22')
 PRGIT_Sig <- c('PTPRN', 'RGS14', 'G6PC3', 'IGFBP2', 'TIMP4')
 DRCHP_Sig <- c('DES', 'RANBP17', 'CLEC5A', 'HOXC11', 'POSTN') #removed as HOXC11 is not in CGGA dataset
 BHLNSX_Sig <- c('BPIFB2', 'HOXA13', 'LRRC10', 'NELL1', 'SDR16C5', 'XIRP2')
-genes_I_care_about <- c(GR_Sig, HOSS_Sig, LMSZ_Sig, PRGIT_Sig, BHLNSX_Sig)
+genes_I_care_about <- c(GR_Sig, NIM_Sig, HOSS_Sig, LMSZ_Sig, PRGIT_Sig, BHLNSX_Sig)
 
 #Load in data
 load('data/combined_data.rdata')
@@ -46,11 +47,32 @@ BHLNSX_Sig
 BHLNSX_coef <- list(BPIFB2 = -0.0881, HOXA13 = -0.0854, LRRC10 = -0.0614, NELL1 = -0.151, SDR16C5 = -0.0945, XIRP2 = -0.1441)
 BHLNSX_sig_out <- prev_method_calculator(BHLNSX_Sig, BHLNSX_coef, key_genes_data)
 
-prev_methods_results <- data.frame(GR = t(GR_sig_out), HOSS = t(HOSS_sig_out),
+#### NIM ------
+#NRG1 × 0.132 + expression level of ITGA3 × 0.139 + expression level of MAP1LC3A × 0.269
+NIM_Sig
+NIM_coef <- list(NRG1 = 0.132, ITGA3 = 0.139, MAP1LC3A = 0.269)
+NIM_sig_out <- prev_method_calculator(NIM_Sig, NIM_coef, key_genes_data)
+
+prev_methods_results <- data.frame(GR = t(GR_sig_out), NIM = t(NIM_sig_out), HOSS = t(HOSS_sig_out),
                                    PRGIT = t(PRGIT_sig_out), BHLNSX = t(BHLNSX_sig_out))
 
-prev_methods_results
+
+colnames(prev_methods_results) <- c("GR","NIM", "HOSS", "PRGIT", "BHLNSX")
+
 
 save(prev_methods_results, file = 'results/prev_methods_results.rdata')
+
+#Validating their is no difference between source
+
+median(prev_methods_results$GR)
+
+CGGA_res <- prev_methods_results[grep('CGGA', rownames(prev_methods_results)),]
+
+table(CGGA_res$GR < median(prev_methods_results$GR))
+table(CGGA_res$NIM < median(prev_methods_results$NIM))
+table(CGGA_res$HOSS < median(prev_methods_results$HOSS))
+table(CGGA_res$PRGIT < median(prev_methods_results$PRGIT))
+table(CGGA_res$BHLNSX < median(prev_methods_results$BHLNSX))
+
 
 

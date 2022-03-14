@@ -59,6 +59,7 @@ estimate_scores[] <- lapply(estimate_scores, as.numeric)
 estimate_scores$tumor_purity <- cos(estimate_scores$ESTIMATEScore *0.0001467884+0.6049872018) #https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3826632/
 
 dim(estimate_scores)
+rownames(estimate_scores) <- gsub('\\.', '-', rownames(estimate_scores))
 save(estimate_scores, file = 'results/estimate_scores.rdata')
 
 #Plots
