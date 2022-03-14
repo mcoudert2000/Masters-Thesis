@@ -62,6 +62,51 @@ dim(estimate_scores)
 rownames(estimate_scores) <- gsub('\\.', '-', rownames(estimate_scores))
 save(estimate_scores, file = 'results/estimate_scores.rdata')
 
+
+
+#Survival analysis of Stromal and Immune Scores
+print(load('data/CGGA/CGGA_data.RDATA'))
+
+deconv_validation <- CGGA_data$samples
+deconv_validation <- ensemble_validation[!is.na(ensemble_validation$OS), ]
+#12 samples removed
+CGGA_est_scores <- estimate_scores[grep('CGGA',rownames(estimate_scores)),]
+
+CGGA_est_scores <- CGGA_est_scores[!is.na(CGGA_data$samples$OS),]
+strom_bin <- ifelse(CGGA_est_scores$StromalScore > median(CGGA_est_scores$StromalScore), 'HIGH', "LOW")
+immune_bin <- ifelse(CGGA_est_scores$ImmuneScore > median(CGGA_est_scores$ImmuneScore), 'HIGH', "LOW")
+deconv_validation_data <- data.frame(stromalCat = strom_bin, immuneCat = immune_bin)
+deconv_validation_data$sample <- rownames(deconv_validation)
+deconv_validation_data$OS <- deconv_validation$OS
+deconv_validation_data$event <- deconv_validation$Censor..alive.0..dead.1.
+deconv_validation_data$estCat <- ifelse(CGGA_est_scores$ESTIMATEScore > median(CGGA_est_scores$ESTIMATEScore), 'HIGH', "LOW")
+
+require(survival)
+require(survminer)
+
+#Validating on Stromal score
+deconv_surv_obj <- Surv(time = deconv_validation_data$OS, event = deconv_validation_data$event)
+deconv_fit <- survfit(deconv_surv_obj ~ stromalCat, data = deconv_validation_data)
+stromal_plot <-ggsurvplot(deconv_fit, pval = T)
+
+#Validating on Immune Score
+deconv_surv_obj <- Surv(time = deconv_validation_data$OS, event = deconv_validation_data$event)
+deconv_fit <- survfit(deconv_surv_obj ~ immuneCat, data = deconv_validation_data)
+immune_plot <- ggsurvplot(deconv_fit, pval = T)
+
+#Validating on Estimate Score
+deconv_surv_obj <- Surv(time = deconv_validation_data$OS, event = deconv_validation_data$event)
+deconv_fit <- survfit(deconv_surv_obj ~ estCat, data = deconv_validation_data)
+estimate_plot <- ggsurvplot(deconv_fit, pval = T)
+
+stromal_plot$plot
+immune_plot
+estimate_plot
+require(ggpubr)
+ggarrange(plotlist = list(stromal_plot$plot, immune_plot$plot, estimate_plot$plot),
+          labels = c("Stromal", "Immune", "Estimate"), ncol = 3)
+
+
 #Plots
 cor(estimate_scores$ImmuneScore, estimate_scores$StromalScore)
 
