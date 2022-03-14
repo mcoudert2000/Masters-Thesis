@@ -153,9 +153,19 @@ R2C <- combined_data_normalized$E[,'R2C']
 R2A_tp <- estimate_scores[c(3),]$tumor_purity
 R2C_tp <- estimate_scores[c(5),]$tumor_purity
 
-R2A_tp - R2C_tp
-c_RNA2 <- ( R2A - R2C + R2A_tp * R2C - R2C_tp * R2A ) / (R2A_tp - R2C_tp)
+R1B <- combined_data_normalized$E[,'R1B']
+R1C <- combined_data_normalized$E[,'R1C']
 
+
+R1C_tp <- estimate_scores[6,]$tumor_purity
+R1B_tp <- estimate_scores[2,]$tumor_purity
+
+R2A_tp - R2C_tp
+R1C_tp - R1B_tp
+c_RNA2 <- ( R2A - R2C + R2A_tp * R2C - R2C_tp * R2A ) / (R2A_tp - R2C_tp)
+c_RNA1 <- ( R1B - R1C + R1B_tp * R1C - R1C_tp * R1B ) / (R1B_tp - R1C_tp)
 #This is (theoretically) isolated cancer RNA
 c_RNA2
+
+save(c_RNA1, c_RNA2, file = 'results/estimate/isolated_tumor.rdata')
 
