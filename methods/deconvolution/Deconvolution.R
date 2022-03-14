@@ -62,7 +62,20 @@ dim(estimate_scores)
 rownames(estimate_scores) <- gsub('\\.', '-', rownames(estimate_scores))
 save(estimate_scores, file = 'results/estimate_scores.rdata')
 
+#seeing risk categories for Astrid Samples
+data.frame(sample = rownames(estimate_scores)[1:9],
+           stromal = ifelse(estimate_scores$StromalScore > median(estimate_scores$StromalScore), "HIGH", "LOW")[1:9],
+           immune = ifelse(estimate_scores$StromalScore > median(estimate_scores$ImmuneScore), "HIGH", "LOW")[1:9])[c(7:9,1,2,6,3:5),]
 
+ggplot(data.frame(sample = rownames(estimate_scores)[1:9],
+           tumor_purity_est = round(estimate_scores$tumor_purity[1:9],2),
+           tumor_purity_astrid = round(Astrid_data$samples$tumor_content,2))[c(7:9,1,2,6,3:5),]) +
+  geom_point(aes(x = tumor_purity_est, y = tumor_purity_astrid)) +
+  geom_text(aes(x = tumor_purity_est, y = tumor_purity_astrid), label = rownames(estimate_scores)[c(7:9,1,2,6,3:5)], hjust = 0.1, vjust = 0.1) +
+  geom_abline(slope = 1, intercept = 0) +
+  xlab('Estimate Tumor Purity') + ylab('Astrid Tumor Purity') +
+  ggtitle('Estimate vs Astrid Tumor Purity') +
+  xlim(c(0.2, 1)) + ylim(c(0.2,1))
 
 #Survival analysis of Stromal and Immune Scores
 print(load('data/CGGA/CGGA_data.RDATA'))
