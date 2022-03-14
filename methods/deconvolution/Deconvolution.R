@@ -169,3 +169,26 @@ c_RNA2
 
 save(c_RNA1, c_RNA2, file = 'results/estimate/isolated_tumor.rdata')
 
+isolated_tumor <- data.frame(c_RNA1 = c_RNA1, c_RNA2 = c_RNA2)
+write.table(isolated_tumor, file = 'results/estimate/isolated_tumor.txt', sep = '\t',quote = F)
+
+
+filterCommonGenes(input.f = 'results/estimate/isolated_tumor.txt', 
+                  output.f = 'results/estimate/isolated_tumor.gct',
+                  id = 'GeneSymbol')
+
+estimateScore("results/estimate/isolated_tumor.gct", "results/estimate/isolated_tumor_estimate_score.gct", platform="illumina") #check to make sure this is the correct platform
+
+#plotPurity(scores = "results/estimate/GBM_estimate_score.gct", platform = 'affymetrix')
+
+isolated_estimate_scores <- read.delim(file="results/estimate/isolated_tumor_estimate_score.gct", skip=2, quote = " ")[,2:4]
+
+
+rownames(isolated_estimate_scores) <- isolated_estimate_scores$Description
+isolated_estimate_scores <- isolated_estimate_scores %>%
+  dplyr::select(-'Description') %>% t() %>% data.frame()
+
+
+
+isolated_estimate_scores$tumor_purity <- cos(isolated_estimate_scores$ESTIMATEScore *0.0001467884+0.6049872018)
+isolated_estimate_scores
