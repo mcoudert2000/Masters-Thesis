@@ -40,7 +40,9 @@ TCGA_samples <- data.frame(patient = gbm.exp$patient,
                            age_index = gbm.exp$age_at_index,
                            gender = gbm.exp$gender,
                            IDH = gbm.exp$paper_IDH.status,
-                           subtype = gbm.exp@colData@listData[["paper_Transcriptome.Subtype"]])
+                           subtype = gbm.exp@colData@listData[["paper_Transcriptome.Subtype"]],
+                           time = gbm.exp$days_to_last_follow_up,
+                           event = gbm.exp$vital_status)
 TCGA_counts <- gbm.exp@assays@data@listData[["raw_count"]]
 
 

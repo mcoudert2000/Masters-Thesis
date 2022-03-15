@@ -15,3 +15,4 @@ merge_duplicate_rows <- function(dat) {
   rownames(out) <- out$GENENAME
   return(dplyr::select(out, -GENENAME))
 }
+
