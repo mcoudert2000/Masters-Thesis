@@ -101,3 +101,44 @@ IDH_PCA_plot <- fviz_pca_ind(IDH_PCA, geom.var = T, geom.ind = F, repel = T) +
 
 ggsave(IDH_PCA_plot, filename = 'plots/PCA Plot of 5 Key Genes Used in IDH-Signature.png')  
 
+
+#Validation of survival differences between two groups
+
+require(survival)
+require(survminer)
+load('data/TCGA_data_survival.rdata')
+
+event <- ifelse(TCGA_survival_data$samples$event == "Dead", 1, 0)
+time <- TCGA_survival_data$samples$time
+IDH <- ifelse(TCGA_survival_data$samples$IDH == "WT", "WT", "Mutant")
+
+survival_TCGA_IDH <- data.frame(event, time, IDH)
+
+ggsurvplot(survfit(Surv(time, event) ~ IDH), data = survival_TCGA_IDH, pval = T)
+
+
+load('data/CGGA/CGGA_data.RDATA')
+
+CGGA_survival_samples <- CGGA_data$samples[!is.na(CGGA_data$samples$OS) &
+                                             !is.na(CGGA_data$samples$Censor..alive.0..dead.1.),]
+
+
+IDH_CGGA <- CGGA_survival_samples$IDH_mutation_status
+event_CGGA <- CGGA_survival_samples$Censor..alive.0..dead.1.
+time_CGGA <- CGGA_survival_samples$OS
+
+survival_CGGA_IDH <- data.frame(event = event_CGGA,time = time_CGGA,IDH = IDH_CGGA)
+ggsurvplot(survfit(Surv(time_CGGA, event_CGGA) ~ IDH_CGGA), data = survival_CGGA_IDH, pval = T)
+
+survival_CGGA_IDH$source <- rep("CGGA", length(CGGA_survival_samples[,1]))
+survival_TCGA_IDH$source <- rep("TCGA", length(TCGA_survival_samples[,1]))
+
+survival_TCGA_IDH$IDH <- ifelse(survival_TCGA_IDH$IDH == "WT", "Wildtype", "Mutant")
+
+survival_combined_IDH <- rbind(survival_TCGA_IDH, survival_CGGA_IDH)
+
+
+
+ggsurvplot(survfit(Surv(survival_combined_IDH$time, survival_combined_IDH$event) ~ survival_combined_IDH$IDH), data =survival_combined_IDH, pval = T)
+
+

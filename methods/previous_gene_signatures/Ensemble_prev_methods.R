@@ -151,4 +151,104 @@ ggsurvplot(survfit(Surv(ensemble_validation_data$OS,
                         ensemble_validation_data$event) ~
                      ifelse(CGGA_bin_BHLNSX, "HIGH", "LOW"), data = ensemble_validation_data), pval = T)
 
+#TCGA surv analysis
+load('data/TCGA_data_survival.rdata')
+{
+TCGA_survival_data$samples$patient
 
+TCGA_res <- prev_methods_results[gsub('\\.', '-', rownames(binary_results)) %in% TCGA_survival_data$samples$patient,]
+
+TCGA_binary <- TCGA_res
+TCGA_meds <- c()
+for(i in 1:length(TCGA_res[1,])) {
+  TCGA_meds <- c(TCGA_meds, median(TCGA_res[,i]))
+  TCGA_binary[,i] <- TCGA_res[,i] > TCGA_meds[i]
+}
+colnames(TCGA_binary) <- c("GR", "NIM", "HOSS", "PRGIT", "BHLNSX")
+
+TCGA_samples <- TCGA_survival_data$samples
+TCGA_samples$event <- ifelse(TCGA_survival_data$samples$event == "Dead", 1, 0)
+
+TCGA_event <- TCGA_samples$event
+TCGA_time <- TCGA_samples$time
+
+TCGA_GR <- ifelse(TCGA_binary$GR, "HIGH", "LOW")
+TCGA_NIM <- ifelse(TCGA_binary$NIM, "HIGH", "LOW")
+TCGA_HOSS <- ifelse(TCGA_binary$HOSS, "HIGH", "LOW")
+TCGA_PRGIT <- ifelse(TCGA_binary$PRGIT, "HIGH", "LOW")
+TCGA_BHLNSX <- ifelse(TCGA_binary$BHLNSX, "HIGH", "LOW")
+
+TCGA_GR_p <- ggsurvplot(survfit(Surv(TCGA_time,
+                        TCGA_event) ~
+                     TCGA_GR, data = TCGA_samples), pval = T)
+
+TCGA_NIM_p <- ggsurvplot(survfit(Surv(TCGA_time,
+                        TCGA_event) ~
+                     TCGA_NIM, data = TCGA_samples), pval = T)
+
+TCGA_HOSS_p <-ggsurvplot(survfit(Surv(TCGA_time,
+                        TCGA_event) ~
+                     TCGA_HOSS, data = TCGA_samples), pval = T)
+
+TCGA_PRGIT_p <-ggsurvplot(survfit(Surv(TCGA_time,
+                        TCGA_event) ~
+                     TCGA_PRGIT, data = TCGA_samples), pval = T)
+
+TCGA_BHLNSX_p <-ggsurvplot(survfit(Surv(TCGA_time,
+                        TCGA_event) ~
+                     TCGA_BHLNSX, data = TCGA_samples), pval = T)
+
+ggarrange(plotlist = list(TCGA_GR_p$plot, TCGA_NIM_p$plot,
+                          TCGA_HOSS_p$plot, TCGA_PRGIT_p$plot,
+                          TCGA_BHLNSX_p$plot), labels = c('GR', 'NIM', "HOSS", "PRGIT", "BHLNSX"), ncol = 5) +
+  ggtitle("Within TCGA Log 2 CPM Survival Analysis")
+}
+
+##REPEATED WITH CPM rather than log2 CPM
+{TCGA_res <- prev_methods_results_cpm[gsub('\\.', '-', rownames(binary_results)) %in% TCGA_survival_data$samples$patient,]
+
+TCGA_binary <- TCGA_res
+TCGA_meds <- c()
+for(i in 1:length(TCGA_res[1,])) {
+  TCGA_meds <- c(TCGA_meds, median(TCGA_res[,i]))
+  TCGA_binary[,i] <- TCGA_res[,i] > TCGA_meds[i]
+}
+TCGA_binary
+
+TCGA_samples <- TCGA_survival_data$samples
+TCGA_samples$event <- ifelse(TCGA_survival_data$samples$event == "Dead", 1, 0)
+
+TCGA_event <- TCGA_samples$event
+TCGA_time <- TCGA_samples$time
+
+TCGA_GR <- ifelse(TCGA_binary$GR, "HIGH", "LOW")
+TCGA_NIM <- ifelse(TCGA_binary$NIM, "HIGH", "LOW")
+TCGA_HOSS <- ifelse(TCGA_binary$HOSS, "HIGH", "LOW")
+TCGA_PRGIT <- ifelse(TCGA_binary$PRGIT, "HIGH", "LOW")
+TCGA_BHLNSX <- ifelse(TCGA_binary$BHLNSX, "HIGH", "LOW")
+
+TCGA_GR_cpm_p <- ggsurvplot(survfit(Surv(TCGA_time,
+                        TCGA_event) ~
+                     TCGA_GR, data = TCGA_samples), pval = T)
+
+TCGA_NIM_cpm_p <- ggsurvplot(survfit(Surv(TCGA_time,
+                        TCGA_event) ~
+                     TCGA_NIM, data = TCGA_samples), pval = T)
+
+TCGA_HOSS_cpm_p <- ggsurvplot(survfit(Surv(TCGA_time,
+                        TCGA_event) ~
+                     TCGA_HOSS, data = TCGA_samples), pval = T)
+
+TCGA_PRGIT_cpm_p <- ggsurvplot(survfit(Surv(TCGA_time,
+                        TCGA_event) ~
+                     TCGA_PRGIT, data = TCGA_samples), pval = T)
+
+TCGA_BHLNSX_cpm_p <- ggsurvplot(survfit(Surv(TCGA_time,
+                        TCGA_event) ~
+                     TCGA_BHLNSX, data = TCGA_samples), pval = T)
+
+ggarrange(plotlist = list(TCGA_GR_cpm_p$plot, TCGA_NIM_cpm_p$plot,
+                          TCGA_HOSS_cpm_p$plot, TCGA_PRGIT_cpm_p$plot,
+                          TCGA_BHLNSX_cpm_p$plot), labels = c('GR', 'NIM', "HOSS", "PRGIT", "BHLNSX"), ncol = 5) +
+  ggtitle("Within TCGA CPM Survival Analysis")
+}

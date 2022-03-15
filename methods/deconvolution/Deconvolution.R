@@ -112,12 +112,30 @@ deconv_surv_obj <- Surv(time = deconv_validation_data$OS, event = deconv_validat
 deconv_fit <- survfit(deconv_surv_obj ~ estCat, data = deconv_validation_data)
 estimate_plot <- ggsurvplot(deconv_fit, pval = T)
 
-stromal_plot$plot
-immune_plot
-estimate_plot
 require(ggpubr)
 ggarrange(plotlist = list(stromal_plot$plot, immune_plot$plot, estimate_plot$plot),
           labels = c("Stromal", "Immune", "Estimate"), ncol = 3)
+
+#Validating in TCGA data
+load('data/TCGA_data_survival.rdata')
+
+TCGA_est_scores <- estimate_scores[grep('TCGA',rownames(estimate_scores)),]
+
+TCGA_est_scores <- TCGA_est_scores[gsub('\\.', '-',rownames(TCGA_est_scores)) %in% colnames(TCGA_survival_data),]
+TCGA_stromCat <- ifelse(TCGA_est_scores$StromalScore > median(TCGA_est_scores$StromalScore), "HIGH", "LOW")
+TCGA_immuneCat <- ifelse(TCGA_est_scores$ImmuneScore > median(TCGA_est_scores$ImmuneScore), "HIGH", "LOW")
+TCGA_estCat <- ifelse(TCGA_est_scores$ESTIMATEScore > median(TCGA_est_scores$ESTIMATEScore), "HIGH", "LOW")
+
+TCGA_time <- TCGA_survival_data$samples$time
+TCGA_event <- ifelse(TCGA_survival_data$samples$event == "Dead", 1, 0)
+
+TCGA_strom_p <- ggsurvplot(survfit(Surv(TCGA_time, TCGA_event) ~ TCGA_stromCat), data = TCGA_survival_samples, pval = T)
+TCGA_imm_p <- ggsurvplot(survfit(Surv(TCGA_time, TCGA_event) ~ TCGA_immuneCat), data = TCGA_survival_samples, pval = T)
+TCGA_est_p <- ggsurvplot(survfit(Surv(TCGA_time, TCGA_event) ~ TCGA_estCat), data = TCGA_survival_samples, pval = T)
+
+ggarrange(plotlist = list(TCGA_strom_p$plot, TCGA_imm_p$plot, TCGA_est_p$plot),
+          labels = c("Stromal", "Immune", "EstimateScore"), ncol = 3)
+
 
 
 #Plots
@@ -178,8 +196,6 @@ filterCommonGenes(input.f = 'results/estimate/isolated_tumor.txt',
                   id = 'GeneSymbol')
 
 estimateScore("results/estimate/isolated_tumor.gct", "results/estimate/isolated_tumor_estimate_score.gct", platform="illumina") #check to make sure this is the correct platform
-
-#plotPurity(scores = "results/estimate/GBM_estimate_score.gct", platform = 'affymetrix')
 
 isolated_estimate_scores <- read.delim(file="results/estimate/isolated_tumor_estimate_score.gct", skip=2, quote = " ")[,2:4]
 

@@ -67,5 +67,10 @@ dim(TCGA_samples)
 TCGA_data <- DGEList(counts = TCGA_counts, samples = TCGA_samples,
                      group = TCGA_samples$IDH)
 
+TCGA_survival_samples <- TCGA_samples[!is.na(TCGA_samples$time) & TCGA_samples$event != "Not Reported",]
+TCGA_survival_counts <- TCGA_counts[,!is.na(TCGA_samples$time) & TCGA_samples$event != "Not Reported"]
+
+TCGA_survival_data <- DGEList(counts = TCGA_survival_counts, samples = TCGA_survival_samples)
 
 save(TCGA_data, file = 'data/TCGA_data_full.rdata')
+save(TCGA_survival_data, file = 'data/TCGA_data_survival.rdata')
