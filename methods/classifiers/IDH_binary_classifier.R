@@ -179,5 +179,3 @@ IDH_misclassified
 IDH_classified <- rownames(IDH_visualization_data[IDH_visualization_data$predict == IDH_visualization_data$IDH,])[-(1:9)]
 
 t.test(estimate_scores[IDH_misclassified,]$tumor_purity, estimate_scores[IDH_classified,]$tumor_purity)
-
-

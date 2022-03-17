@@ -50,7 +50,7 @@ PRGIT_sig_out_cpm <- prev_method_calculator(PRGIT_Sig, PRGIT_coef, key_genes_cpm
 
 #### BHLNSX-Sig------
 BHLNSX_Sig
-BHLNSX_coef <- list(BPIFB2 = -0.0881, HOXA13 = -0.0854, LRRC10 = -0.0614, NELL1 = -0.151, SDR16C5 = -0.0945, XIRP2 = -0.1441)
+BHLNSX_coef <- list(BPIFB2 = -0.0881, HOXA13 = -0.0854, LRRC10 = -0.0614, NELL1 = 0.151, SDR16C5 = 0.0945, XIRP2 = -0.1441)
 BHLNSX_sig_out <- prev_method_calculator(BHLNSX_Sig, BHLNSX_coef, key_genes_data)
 BHLNSX_sig_out_cpm <- prev_method_calculator(BHLNSX_Sig, BHLNSX_coef, key_genes_cpm_data)
 

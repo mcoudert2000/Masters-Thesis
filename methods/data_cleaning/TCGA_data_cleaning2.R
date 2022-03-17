@@ -14,7 +14,7 @@ query.exp <- GDCquery(
   
   data.type = "Gene expression quantification",
   
-  platform = "IlluminaHiseq",
+  platform = "Illumina HiSeq",
   
   file.type = "results",
   
