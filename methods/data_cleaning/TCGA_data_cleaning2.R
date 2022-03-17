@@ -14,7 +14,7 @@ query.exp <- GDCquery(
   
   data.type = "Gene expression quantification",
   
-  platform = "Illumina HiSeq",
+  platform = "IlluminaHiseq",
   
   file.type = "results",
   
@@ -67,6 +67,7 @@ dim(TCGA_samples)
 TCGA_data <- DGEList(counts = TCGA_counts, samples = TCGA_samples,
                      group = TCGA_samples$IDH)
 
+#Get survival data
 TCGA_survival_samples <- TCGA_samples[!is.na(TCGA_samples$time) & TCGA_samples$event != "Not Reported",]
 TCGA_survival_counts <- TCGA_counts[,!is.na(TCGA_samples$time) & TCGA_samples$event != "Not Reported"]
 

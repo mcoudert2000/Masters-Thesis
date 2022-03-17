@@ -4,7 +4,7 @@ require(dplyr)
 #Try with these genes as well (table 1): https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5940130/
 
 print(load('results/prev_methods_results.rdata'))
-dendrogram_results <- scale(prev_methods_results)
+dendrogram_results <- scale(prev_methods_results_cpm)
 
 #Calculates the distance between points
 hc <- dendrogram_results %>% dist() %>% hclust()
@@ -27,7 +27,7 @@ colLab <- function(n) {
       lab.cex = 0.01
     } else{
       col_treatment = 'red'
-      lab.cex = 1
+      lab.cex = .3
     }
     }
     #Modification of leaf attribute

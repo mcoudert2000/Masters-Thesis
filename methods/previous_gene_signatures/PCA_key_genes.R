@@ -4,12 +4,12 @@ require(dplyr)
 require(cluster)
 
 GR_Sig <- c('GRIA2', 'RYR3')
+NIM_Sig <- c('NRG1', 'ITGA3', 'MAP1LC3A')
 HOSS_Sig <- c('HOXC10', 'OSMR', 'SCARA3', 'SLC39A10')
-LMSZ_Sig <- c('LHX2', 'MEOX2', 'SNAI2', 'ZNF22')
 PRGIT_Sig <- c('PTPRN', 'RGS14', 'G6PC3', 'IGFBP2', 'TIMP4')
 #DRCHP_Sig <- c('DES', 'RANBP17', 'CLEC5A', 'HOXC11', 'POSTN') #removed as HOXC11 is not in CGGA dataset
 BHLNSX_Sig <- c('BPIFB2', 'HOXA13', 'LRRC10', 'NELL1', 'SDR16C5', 'XIRP2')
-genes_I_care_about <- c(GR_Sig, HOSS_Sig, LMSZ_Sig, PRGIT_Sig, BHLNSX_Sig)
+genes_I_care_about <- c(GR_Sig, NIM_Sig, HOSS_Sig, PRGIT_Sig, BHLNSX_Sig)
 
 load('data/combined_data.rdata')
 

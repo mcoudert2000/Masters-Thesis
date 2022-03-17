@@ -62,6 +62,10 @@ dim(estimate_scores)
 rownames(estimate_scores) <- gsub('\\.', '-', rownames(estimate_scores))
 save(estimate_scores, file = 'results/estimate_scores.rdata')
 
+#Checking if there is a difference between TCGA and CGGA samples.
+t.test(estimate_scores[grep("TCGA", rownames(estimate_scores)),]$tumor_purity, estimate_scores[grep("CGGA", rownames(estimate_scores)),]$tumor_purity)
+
+
 #seeing risk categories for Astrid Samples
 data.frame(sample = rownames(estimate_scores)[1:9],
            stromal = ifelse(estimate_scores$StromalScore > median(estimate_scores$StromalScore), "HIGH", "LOW")[1:9],

@@ -36,8 +36,6 @@ IDH_test$outcome <- outcome_test
 table(IDH_train$outcome)
 table(IDH_test$outcome)
 
-str(IDH_train)
-str(IDH_test)
 
 indxTrain <- createDataPartition(y = IDH_train$outcome,p = 0.75,list = FALSE)
 training <- IDH_train[indxTrain,]
@@ -82,9 +80,21 @@ IDH_test$predict <- ifelse(predict(model, newdata = IDH_test[,c(1:5)]) == 0, "ID
 IDH_visualization_data <- rbind(Astrid_test, IDH_train[,c(1:5,7,8)], IDH_test[,c(1:5,7,8)])
 IDH_visualization_data$source <- as.factor(IDH_visualization_data$source)
 
+IDH_visualization_data$IDH <- c(rep("Unknown",9), ifelse(IDH_train$outcome == 1, "IDH_Mutant", "IDH_WT"), ifelse(IDH_test$outcome == 1, "IDH_Mutant", "IDH_WT"))
+
+IDH_visualization_data
+library(rpart.plot)
+rpart.plot(model$finalModel)
+
+#Checking % of samples that fit the condition in training and test set
+sum(training$RBP1>=5.7) / length(training$RBP1)
+sum(testing$RBP1>=5.7) / length(testing$RBP1)
+
 require("FactoMineR")
 require("factoextra")
 IDH_PCA <- PCA(IDH_visualization_data[,1:5], scale.unit = T, graph = F)
+
+IDH_PCA2 <- PCA(IDH_visualization_data[,c("RBP1", "HMX1")], scale.unit = T, graph = F)
 
 IDH_PCA
 
@@ -96,12 +106,28 @@ d$label <- rownames(IDH_PCA)
 
 IDH_PCA_plot <- fviz_pca_ind(IDH_PCA, geom.var = T, geom.ind = F, repel = T) +
   geom_text(data = d[1:9,], aes(x = Dim.1, y = Dim.2, label = label), hjust = -.1, vjust =-.1) +
-  geom_point(data = d, aes(x = Dim.1, y = Dim.2, col = Model_Prediction, pch = Source)) +
+  geom_point(data = d, aes(x = Dim.1, y = Dim.2, col = IDH_visualization_data$IDH, pch = Source)) +
   ggtitle("PCA Plot of 5 Key Genes Used in IDH-Signature")
 
 ggsave(IDH_PCA_plot, filename = 'plots/PCA Plot of 5 Key Genes Used in IDH-Signature.png')  
 
 
+d2 <- as.data.frame(IDH_PCA2$ind$coord)
+d2$label <- rownames(IDH_PCA2)
+
+IDH_PCA2_plot <- fviz_pca_ind(IDH_PCA2, geom.var = T, geom.ind = F, repel = T) +
+  geom_text(data = d2[1:9,], aes(x = Dim.1, y = Dim.2, label = label), hjust = -.1, vjust =-.1) +
+  geom_point(data = d2, aes(x = Dim.1, y = Dim.2, col = Model_Prediction, pch = Source)) +
+  ggtitle("PCA Plot of 2 Key Genes Used in IDH-Signature")
+
+ggplot(IDH_visualization_data[,c("RBP1", "HMX1")]) +
+  geom_point(aes(x = RBP1, y = HMX1, col = IDH_visualization_data$IDH, pch = Source)) +
+  geom_segment(aes(x = 5.7, y = 2.2, xend = -5, yend = 2.2)) +
+  geom_segment(aes(x = 5.7, y = 2.2, xend = 5.7, yend = 10)) +
+  ggtitle("Plot of 2 Key Genes Used in IDH-Signature with Boundary Lines")
+
+
+IDH_PCA2_plot
 #Validation of survival differences between two groups
 
 require(survival)
@@ -138,7 +164,20 @@ survival_TCGA_IDH$IDH <- ifelse(survival_TCGA_IDH$IDH == "WT", "Wildtype", "Muta
 survival_combined_IDH <- rbind(survival_TCGA_IDH, survival_CGGA_IDH)
 
 
-
 ggsurvplot(survfit(Surv(survival_combined_IDH$time, survival_combined_IDH$event) ~ survival_combined_IDH$IDH), data =survival_combined_IDH, pval = T)
+
+
+#Seeing if misclassification is associated with tumor content
+
+load('results/estimate_scores.rdata')
+
+rownames(estimate_scores)
+rownames(IDH_test) %in% rownames(estimate_scores)
+
+IDH_misclassified <- rownames(IDH_visualization_data[IDH_visualization_data$predict != IDH_visualization_data$IDH,])[-(1:9)]
+IDH_misclassified
+IDH_classified <- rownames(IDH_visualization_data[IDH_visualization_data$predict == IDH_visualization_data$IDH,])[-(1:9)]
+
+t.test(estimate_scores[IDH_misclassified,]$tumor_purity, estimate_scores[IDH_classified,]$tumor_purity)
 
 
