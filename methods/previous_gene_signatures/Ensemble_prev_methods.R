@@ -17,6 +17,12 @@ binary_results[1:9,]
 #sorted in right order
 binary_results_printable[c(7:9,1,2,6,3:5),]
 
+pure_tum_bin_res <- pure_tumor_prev_methods_results
+for(i in 1:length(ensemble_results[1,])) {
+  pure_tum_bin_res[,i] <- ifelse(pure_tumor_prev_methods_results[,i] > meds[i], 'HIGH', 'LOW')
+}
+pure_tum_bin_res
+
 #Table of outputs to see what percentage of them agree
 table(as.factor(rowSums(binary_results)))
 
@@ -65,7 +71,7 @@ ggplot(ensemble_validation_data) +
   ggtitle("Overall Survival Stratified by Ensemble Method Risk Score")
 
 
-t.test(ensemble_validation_data[ensemble_validation_data$RS == "HIGH",]$OS,
+{t.test(ensemble_validation_data[ensemble_validation_data$RS == "HIGH",]$OS,
        ensemble_validation_data[ensemble_validation_data$RS == "LOW",]$OS)
 
 validation_samples <- rownames(ensemble_validation)
@@ -75,42 +81,35 @@ HOSS_bin <- binary_results[rownames(binary_results) %in% validation_samples,]$HO
 PRGIT_bin <- binary_results[rownames(binary_results) %in% validation_samples,]$PRGIT
 BHLNSX_bin <- binary_results[rownames(binary_results) %in% validation_samples,]$BHLNSX
 
-validate_method <- function(binary_results, 
-                            val_samples = validation_samples, 
-                            OS = ensemble_validation_data$OS, 
-                            event = ensemble_validation_data$event) {
-  validate_data <- data.frame(samples = val_samples, 
-                              RS = ifelse(binary_results, "HIGH", "LOW"),
-                              OS = OS, 
-                              event = event)
-  ens_fit <- survfit(Surv(validate_data$OS, validate_data$event) ~ RS, data = validate_data)
-  p <- ggsurvplot(ens_fit, pval = T)
-  return(p)
-}
 
 
-ggsurvplot(survfit(Surv(ensemble_validation_data$OS,
+CGGA_GR_p <- ggsurvplot(survfit(Surv(ensemble_validation_data$OS,
                         ensemble_validation_data$event) ~
                      ifelse(GR_bin, "HIGH", "LOW"), data = ensemble_validation_data), pval = T)
 
-ggsurvplot(survfit(Surv(ensemble_validation_data$OS,
+CGGA_NIM_p <- ggsurvplot(survfit(Surv(ensemble_validation_data$OS,
                         ensemble_validation_data$event) ~
                      ifelse(NIM_bin, "HIGH", "LOW"), data = ensemble_validation_data), pval = T)
 
-ggsurvplot(survfit(Surv(ensemble_validation_data$OS,
+CGGA_HOSS_p <- ggsurvplot(survfit(Surv(ensemble_validation_data$OS,
                         ensemble_validation_data$event) ~
                      ifelse(HOSS_bin, "HIGH", "LOW"), data = ensemble_validation_data), pval = T)
 
-ggsurvplot(survfit(Surv(ensemble_validation_data$OS,
+CGGA_PRGIT_p <- ggsurvplot(survfit(Surv(ensemble_validation_data$OS,
                         ensemble_validation_data$event) ~
                      ifelse(PRGIT_bin, "HIGH", "LOW"), data = ensemble_validation_data), pval = T)
 
-ggsurvplot(survfit(Surv(ensemble_validation_data$OS,
+CGGA_BHLNSX_p  <- ggsurvplot(survfit(Surv(ensemble_validation_data$OS,
                         ensemble_validation_data$event) ~
                      ifelse(BHLNSX_bin, "HIGH", "LOW"), data = ensemble_validation_data), pval = T)
+
+CGGA_full_p <- ggarrange(plotlist = list(CGGA_GR_p$plot, CGGA_NIM_p$plot, CGGA_HOSS_p$plot, CGGA_PRGIT_p$plot, CGGA_BHLNSX_p$plot),
+                           labels = c("GR", "NIM", "HOSS", "PRGIT", "BHLNSX"))
+  }
+CGGA_full_p
 #Checking if keeping all calculations within CGGA fixes the problem
 
-CGGA_res <- prev_methods_results[grep('CGGA', rownames(prev_methods_results)),]
+{CGGA_res <- prev_methods_results[grep('CGGA', rownames(prev_methods_results)),]
 CGGA_res <- CGGA_res[!is.na(CGGA_data$samples$OS),]
 dim(CGGA_res)
 CGGA_binary_res <- CGGA_res
@@ -127,30 +126,34 @@ CGGA_bin_HOSS <- CGGA_binary_res$HOSS
 CGGA_bin_PRGIT <- CGGA_binary_res$PRGIT
 CGGA_bin_BHLNSX <- CGGA_binary_res$BHLNSX
 
-ggsurvplot(survfit(Surv(ensemble_validation_data$OS,
+CGGA_GR_p <- ggsurvplot(survfit(Surv(ensemble_validation_data$OS,
                         ensemble_validation_data$event) ~
                      ifelse(CGGA_bin_GR, "HIGH", "LOW"), data = ensemble_validation_data), pval = T)
 
 
-ggsurvplot(survfit(Surv(ensemble_validation_data$OS,
+CGGA_NIM_p <- ggsurvplot(survfit(Surv(ensemble_validation_data$OS,
                         ensemble_validation_data$event) ~
                      ifelse(CGGA_bin_NIM, "HIGH", "LOW"), data = ensemble_validation_data), pval = T)
 
 
-ggsurvplot(survfit(Surv(ensemble_validation_data$OS,
+CGGA_HOSS_p <-ggsurvplot(survfit(Surv(ensemble_validation_data$OS,
                         ensemble_validation_data$event) ~
                      ifelse(CGGA_bin_HOSS, "HIGH", "LOW"), data = ensemble_validation_data), pval = T)
 
 
-ggsurvplot(survfit(Surv(ensemble_validation_data$OS,
+CGGA_PRGIT_p <-ggsurvplot(survfit(Surv(ensemble_validation_data$OS,
                         ensemble_validation_data$event) ~
                      ifelse(CGGA_bin_PRGIT, "HIGH", "LOW"), data = ensemble_validation_data), pval = T)
 
 
-ggsurvplot(survfit(Surv(ensemble_validation_data$OS,
+CGGA_BHLNSX_p <-ggsurvplot(survfit(Surv(ensemble_validation_data$OS,
                         ensemble_validation_data$event) ~
                      ifelse(CGGA_bin_BHLNSX, "HIGH", "LOW"), data = ensemble_validation_data), pval = T)
 
+CGGA_within_p <- ggarrange(plotlist = list(CGGA_GR_p$plot, CGGA_NIM_p$plot, CGGA_HOSS_p$plot, CGGA_PRGIT_p$plot, CGGA_BHLNSX_p$plot),
+          labels = c("GR", "NIM", "HOSS", "PRGIT", "BHLNSX"))
+}
+CGGA_within_p
 #TCGA surv analysis
 load('data/TCGA_data_survival.rdata')
 {
@@ -198,10 +201,12 @@ TCGA_BHLNSX_p <-ggsurvplot(survfit(Surv(TCGA_time,
                         TCGA_event) ~
                      TCGA_BHLNSX, data = TCGA_samples), pval = T)
 
-ggarrange(plotlist = list(TCGA_GR_p$plot, TCGA_NIM_p$plot,
+TCGA_p <- ggarrange(plotlist = list(TCGA_GR_p$plot, TCGA_NIM_p$plot,
                           TCGA_HOSS_p$plot, TCGA_PRGIT_p$plot,
                           TCGA_BHLNSX_p$plot), labels = c('GR', 'NIM', "HOSS", "PRGIT", "BHLNSX"), ncol = 5) +
   ggtitle("Within TCGA Log 2 CPM Survival Analysis")
+
+ggsave('plots/prev_method_results/TCGA_log2cpm.png', plot = TCGA_p, width = 3000, height = 3000/1.846, units = 'px')
 }
 
 ##REPEATED WITH CPM rather than log2 CPM
@@ -247,8 +252,16 @@ TCGA_BHLNSX_cpm_p <- ggsurvplot(survfit(Surv(TCGA_time,
                         TCGA_event) ~
                      TCGA_BHLNSX, data = TCGA_samples), pval = T)
 
-ggarrange(plotlist = list(TCGA_GR_cpm_p$plot, TCGA_NIM_cpm_p$plot,
+TCGA_cpm_p <- ggarrange(plotlist = list(TCGA_GR_cpm_p$plot, TCGA_NIM_cpm_p$plot,
                           TCGA_HOSS_cpm_p$plot, TCGA_PRGIT_cpm_p$plot,
                           TCGA_BHLNSX_cpm_p$plot), labels = c('GR', 'NIM', "HOSS", "PRGIT", "BHLNSX"), ncol = 5) +
   ggtitle("Within TCGA CPM Survival Analysis")
+
+ggsave('plots/prev_method_results/TCGA_cpm.png', plot = TCGA_cpm_p, width = 3000, height = 3000/1.846, units = 'px')
 }
+
+#Applying ensemble method to only TCGA
+ensemble_TCGA_data <- data.frame(RS = get_mode_per_row(binary_results[gsub('\\.', '-', rownames(binary_results)) %in% TCGA_survival_data$samples$patient,]))
+
+ggsurvplot(survfit(Surv(TCGA_time, TCGA_event) ~ RS, data = ensemble_TCGA_data), pval = T) +
+  ggtitle("Validating Ensemble Method with TCGA dataset")

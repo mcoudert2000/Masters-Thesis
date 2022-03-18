@@ -7,7 +7,6 @@ GR_Sig <- c('GRIA2', 'RYR3')
 NIM_Sig <- c('NRG1', 'ITGA3', 'MAP1LC3A')
 HOSS_Sig <- c('HOXC10', 'OSMR', 'SCARA3', 'SLC39A10')
 PRGIT_Sig <- c('PTPRN', 'RGS14', 'G6PC3', 'IGFBP2', 'TIMP4')
-#DRCHP_Sig <- c('DES', 'RANBP17', 'CLEC5A', 'HOXC11', 'POSTN') #removed as HOXC11 is not in CGGA dataset
 BHLNSX_Sig <- c('BPIFB2', 'HOXA13', 'LRRC10', 'NELL1', 'SDR16C5', 'XIRP2')
 genes_I_care_about <- c(GR_Sig, NIM_Sig, HOSS_Sig, PRGIT_Sig, BHLNSX_Sig)
 
@@ -34,9 +33,15 @@ fviz_pca_ind(pca_plot, col.ind = F, geom.ind = F, geom.var = F, repel = T, axes 
 
 load('results/estimate_scores.rdata')
 
-fviz_pca_ind(pca_plot, col.ind = F, geom.ind = F, geom.var = F, repel = T, axes = c(2,3)) +
+#Clustering on key genes colored by ESTIMATE tumor purity (dim1/2)
+fviz_pca_ind(pca_plot, col.ind = F, geom.ind = F, geom.var = F, repel = T, axes = c(1,2)) +
   geom_point(aes(x = d$Dim.1, y = d$Dim.2, col = estimate_scores$tumor_purity)) +
   geom_text(data = d[1:9,], aes(x = Dim.1, y = Dim.2, label = label), hjust = -.1, vjust =-.1)
+
+#Clustering on key genes colored by ESTIMATE tumor purity (dim2/3)
+fviz_pca_ind(pca_plot, col.ind = F, geom.ind = F, geom.var = F, repel = T, axes = c(2,3)) +
+  geom_point(aes(x = d$Dim.2, y = d$Dim.3, col = estimate_scores$tumor_purity)) +
+  geom_text(data = d[1:9,], aes(x = Dim.2, y = Dim.3, label = label), hjust = -.1, vjust =-.1)
 
 
 #CLUSTER

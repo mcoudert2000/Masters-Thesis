@@ -2,11 +2,9 @@ require(dplyr)
 GR_Sig <- c('GRIA2', 'RYR3')
 NIM_Sig <- c('NRG1', 'ITGA3', 'MAP1LC3A')
 HOSS_Sig <- c('HOXC10', 'OSMR', 'SCARA3', 'SLC39A10')
-LMSZ_Sig <- c('LHX2', 'MEOX2', 'SNAI2', 'ZNF22')
 PRGIT_Sig <- c('PTPRN', 'RGS14', 'G6PC3', 'IGFBP2', 'TIMP4')
-DRCHP_Sig <- c('DES', 'RANBP17', 'CLEC5A', 'HOXC11', 'POSTN') #removed as HOXC11 is not in CGGA dataset
 BHLNSX_Sig <- c('BPIFB2', 'HOXA13', 'LRRC10', 'NELL1', 'SDR16C5', 'XIRP2')
-genes_I_care_about <- c(GR_Sig, NIM_Sig, HOSS_Sig, LMSZ_Sig, PRGIT_Sig, BHLNSX_Sig)
+genes_I_care_about <- c(GR_Sig, NIM_Sig, HOSS_Sig, PRGIT_Sig, BHLNSX_Sig)
 
 #Load in data
 load('data/combined_data.rdata')
@@ -28,7 +26,7 @@ prev_method_calculator <- function(signature, coef, dat) {
 }
 #### GR-SIG ------
 GR_Sig
-GR_coef <- list(GRIA2 = 0.1, RYR3 = -0.1)
+GR_coef <- list(GRIA2 = -0.1, RYR3 = 0.1)
 GR_sig_out <- prev_method_calculator(GR_Sig, GR_coef, key_genes_data)
 GR_sig_out_cpm <- prev_method_calculator(GR_Sig, GR_coef, key_genes_cpm_data)
 
@@ -71,8 +69,30 @@ prev_methods_results_cpm <- data.frame(GR = t(GR_sig_out_cpm), NIM = t(NIM_sig_o
 colnames(prev_methods_results) <- c("GR","NIM", "HOSS", "PRGIT", "BHLNSX")
 colnames(prev_methods_results_cpm) <- c("GR","NIM", "HOSS", "PRGIT", "BHLNSX")
 
+#running previous methods on deconvoluted samples
+load('results/estimate/isolated_tumor.rdata')
+key_genes_pure_tumor <- cbind(data.frame(c_RNA1), data.frame(c_RNA2)) %>%
+  data.frame()
 
-save(prev_methods_results, prev_methods_results_cpm, file = 'results/prev_methods_results.rdata')
+key_genes_pure_tumor <- key_genes_pure_tumor[rownames(key_genes_pure_tumor) %in% genes_I_care_about,]
+key_genes_pure_tumor$GENENAME <- rownames(key_genes_pure_tumor)
+
+data.frame(GR = ,
+           NIM = prev_method_calculator(NIM_Sig, NIM_coef, key_genes_pure_tumor))
+
+GR_sig_tum <- prev_method_calculator(GR_Sig, GR_coef, key_genes_pure_tumor)
+NIM_sig_tum <- prev_method_calculator(NIM_Sig, NIM_coef, key_genes_pure_tumor)
+HOSS_sig_tum <- prev_method_calculator(HOSS_Sig, HOSS_coef, key_genes_pure_tumor)
+PRGIT_sig_tum <- prev_method_calculator(PRGIT_Sig, PRGIT_coef, key_genes_pure_tumor)
+BHLNSX_sig_tum <- prev_method_calculator(BHLNSX_Sig, BHLNSX_coef, key_genes_pure_tumor)
+
+
+pure_tumor_prev_methods_results <- rbind(GR_sig_tum, NIM_sig_tum, HOSS_sig_tum, PRGIT_sig_tum, BHLNSX_sig_tum)
+rownames(pure_tumor_prev_methods_results) <- c("GR", "NIM", "HOSS", "PRGIT", "BHLNSX")
+pure_tumor_prev_methods_results <- pure_tumor_prev_methods_results %>% t()
+
+#save to disk
+save(prev_methods_results, prev_methods_results_cpm, pure_tumor_prev_methods_results, file = 'results/prev_methods_results.rdata')
 
 
 #Validating their is no difference between source
@@ -86,6 +106,5 @@ table(CGGA_res$NIM < median(prev_methods_results$NIM))
 table(CGGA_res$HOSS < median(prev_methods_results$HOSS))
 table(CGGA_res$PRGIT < median(prev_methods_results$PRGIT))
 table(CGGA_res$BHLNSX < median(prev_methods_results$BHLNSX))
-
 
 
