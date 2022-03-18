@@ -141,7 +141,7 @@ ggplot(verhaak_viz_data) +
   scale_color_manual(values = c('green3','red')) +
   ggtitle('PCA Plot of Verhaak Classification')
 
-#Checking whether Tumor Content is a valuable metric for determining misclassification
+#Checking whether Tumor Content is a valuable metric for determining misclassification (THIS DOESNT WORK)
 load('results/estimate_scores.rdata')
 
 misclassified <- verhaak_results[verhaak_results$categories != verhaak_results$subtype,]

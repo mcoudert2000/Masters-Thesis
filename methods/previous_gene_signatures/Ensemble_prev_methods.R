@@ -265,3 +265,18 @@ ensemble_TCGA_data <- data.frame(RS = get_mode_per_row(binary_results[gsub('\\.'
 
 ggsurvplot(survfit(Surv(TCGA_time, TCGA_event) ~ RS, data = ensemble_TCGA_data), pval = T) +
   ggtitle("Validating Ensemble Method with TCGA dataset")
+
+
+#Survival between TCGA and CGGA
+TCGA_v_CGGA_surv <- data.frame(sample = c(rownames(ensemble_validation), TCGA_samples$patient),
+                               time = c(ensemble_validation$OS, TCGA_samples$time),
+                               event = c(ensemble_validation$Censor..alive.0..dead.1., 
+                                         ifelse(TCGA_samples$event == "Dead", 1, 0)),
+                               source = c(rep("CGGA", length(ensemble_validation$OS)), 
+                                          rep("TCGA", length(TCGA_samples$time))))
+
+TCGA_v_CGGA_surv <-TCGA_v_CGGA_surv[!is.na(TCGA_v_CGGA_surv$time),] 
+
+ggsurvplot(survfit(Surv(TCGA_v_CGGA_surv$time / 365, TCGA_v_CGGA_surv$event) ~
+                     TCGA_v_CGGA_surv$source), pval = T, data = TCGA_v_CGGA_surv, risk.table = T) +
+  ggtitle("Survival between CGGA and TCGA")

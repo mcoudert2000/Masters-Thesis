@@ -1,4 +1,3 @@
-#remotes::install_github("icbi-lab/immunedeconv")
 require(immunedeconv)
 require(ggplot2)
 require(estimate)
@@ -13,7 +12,7 @@ deconvolution_data <- as.matrix(combined_data_normalized$E)
 
 #View(deconvolution_data)
 
-deconv_res_cibersort <- deconvolute(deconvolution_data, method = 'cibersort')
+#deconv_res_cibersort <- deconvolute(deconvolution_data, method = 'cibersort')
 
 deconv_res_xcell <- deconvolute(deconvolution_data, method = 'xcell')
 
@@ -29,12 +28,6 @@ for(i in 1:2) {
 }
 binary_results[1:9]
 
-
-#Not finished yet
-rforge <- "http://r-forge.r-project.org"
-#install.packages("estimate", repos=rforge, dependencies=TRUE)
-
-#library(help = "estimate")
 load('data/combined_data.rdata')
 estimate_data <- combined_data_normalized$E
 
