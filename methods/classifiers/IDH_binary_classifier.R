@@ -21,6 +21,7 @@ load('data/normalized_TCGA_CGGA_IDH.rdata')
 IDH_train <- CGGA_v
 IDH_test <- TCGA_v
 
+#Split TCGA and CGGA into test and train set
 IDH_train <- IDH_train[rownames(IDH_train) %in% diff_expressed_genes$CGGA,]
 IDH_test <- IDH_test[rownames(IDH_test) %in% diff_expressed_genes$CGGA,]
 
@@ -46,11 +47,13 @@ prop.table(table(training$outcome)) * 100
 x = training[,1:5]
 y = training$outcome
 
-
+#Train a decision tree with 5 cross validation folds
 model = train(x,y,'rpart',trControl=trainControl(method='cv',number=5))
 model
+#confusiong matrix on CGGA test set
 confusionMatrix(predict(model, newdata = testing), testing$outcome)
 
+#Confusion matrix on TCGA test set
 confusionMatrix(predict(model, newdata = IDH_test[,1:5]), IDH_test$outcome)
 
 
