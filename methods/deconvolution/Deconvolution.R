@@ -143,7 +143,8 @@ ggplot(estimate_scores) +
   geom_point(data = estimate_scores[1:9,], aes(x = StromalScore, y = ImmuneScore, col = 'ASTRID\'s')) +
   geom_point(data = estimate_scores[249:398,], aes(x = StromalScore, y = ImmuneScore, col = 'TCGA')) +
   geom_smooth(data = estimate_scores, aes(x = StromalScore, y = ImmuneScore), method = lm, se = T, linetype = 2, col = 'black') +
-  ggtitle("Stromal Score vs Immune Score")
+  ggtitle("Stromal Score vs Immune Score") +
+  labs(col = "Source")
 
 ggplot(estimate_scores[10:248,]) +
   geom_point(aes(x = -1, y = ESTIMATEScore, col = 'CGGA'), alpha =0.3) +
@@ -160,6 +161,13 @@ ggplot(estimate_scores) +
 ### Linear Equation Solver
 
 #Idea: RNA_tot = RNA_tumor * tumor_content + RNA_non_tumor * (1 - tumor_content)
+load('data/Astrid_data_counts.rdata')
+
+#R2A <- cpm(Astrid_data$counts[,'R2A'])
+#R2C <- cpm(Astrid_data$counts[,'R2C'])
+
+#R1B <- cpm(Astrid_data$counts[,'R1B'])
+#R1C <- cpm(Astrid_data$counts[,'R1C'])
 
 
 R2A <- combined_data_normalized$E[,'R2A']
@@ -180,12 +188,13 @@ R1C_tp - R1B_tp
 c_RNA2 <- ( R2A - R2C + R2A_tp * R2C - R2C_tp * R2A ) / (R2A_tp - R2C_tp)
 c_RNA1 <- ( R1B - R1C + R1B_tp * R1C - R1C_tp * R1B ) / (R1B_tp - R1C_tp)
 #This is (theoretically) isolated cancer RNA
-c_RNA2
+
+
 
 save(c_RNA1, c_RNA2, file = 'results/estimate/isolated_tumor.rdata')
 
 isolated_tumor <- data.frame(c_RNA1 = c_RNA1, c_RNA2 = c_RNA2)
-write.table(isolated_tumor, file = 'results/estimate/isolated_tumor.txt', sep = '\t',quote = F)
+#write.table(isolated_tumor, file = 'results/estimate/isolated_tumor.txt', sep = '\t',quote = F)
 
 
 filterCommonGenes(input.f = 'results/estimate/isolated_tumor.txt', 

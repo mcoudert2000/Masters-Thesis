@@ -64,7 +64,7 @@ require(survminer)
 
 ens_surv_obj <- Surv(time = ensemble_validation_data$OS, event = ensemble_validation_data$event)
 ens_fit <- survfit(ens_surv_obj ~ RS, data = ensemble_validation_data)
-ggsurvplot(ens_fit, pval = T)
+ggsurvplot(ens_fit, pval = T) + ggtitle("Validation of Ensemble Method within the CGGA")
 
 ggplot(ensemble_validation_data) +
   geom_boxplot(aes(x = OS, col = RS)) +
@@ -126,34 +126,44 @@ CGGA_bin_HOSS <- CGGA_binary_res$HOSS
 CGGA_bin_PRGIT <- CGGA_binary_res$PRGIT
 CGGA_bin_BHLNSX <- CGGA_binary_res$BHLNSX
 
+Risk_Score <- ifelse(CGGA_bin_GR, "HIGH", "LOW")
+
 CGGA_GR_p <- ggsurvplot(survfit(Surv(ensemble_validation_data$OS,
-                        ensemble_validation_data$event) ~
-                     ifelse(CGGA_bin_GR, "HIGH", "LOW"), data = ensemble_validation_data), pval = T)
+                        ensemble_validation_data$event) ~ Risk_Score,
+                        data = ensemble_validation_data), pval = T)$plot +
+  theme(legend.position = "none")
 
 
 CGGA_NIM_p <- ggsurvplot(survfit(Surv(ensemble_validation_data$OS,
                         ensemble_validation_data$event) ~
-                     ifelse(CGGA_bin_NIM, "HIGH", "LOW"), data = ensemble_validation_data), pval = T)
+                     ifelse(CGGA_bin_NIM, "HIGH", "LOW"), data = ensemble_validation_data), pval = T)$plot + 
+  theme(legend.position = "none")
 
 
 CGGA_HOSS_p <-ggsurvplot(survfit(Surv(ensemble_validation_data$OS,
                         ensemble_validation_data$event) ~
-                     ifelse(CGGA_bin_HOSS, "HIGH", "LOW"), data = ensemble_validation_data), pval = T)
+                     ifelse(CGGA_bin_HOSS, "HIGH", "LOW"), data = ensemble_validation_data), pval = T)$plot + 
+  theme(legend.position = "none")
 
 
 CGGA_PRGIT_p <-ggsurvplot(survfit(Surv(ensemble_validation_data$OS,
                         ensemble_validation_data$event) ~
-                     ifelse(CGGA_bin_PRGIT, "HIGH", "LOW"), data = ensemble_validation_data), pval = T)
+                     ifelse(CGGA_bin_PRGIT, "HIGH", "LOW"), data = ensemble_validation_data), pval = T)$plot + 
+  theme(legend.position = "none")
 
 
 CGGA_BHLNSX_p <-ggsurvplot(survfit(Surv(ensemble_validation_data$OS,
                         ensemble_validation_data$event) ~
-                     ifelse(CGGA_bin_BHLNSX, "HIGH", "LOW"), data = ensemble_validation_data), pval = T)
+                     ifelse(CGGA_bin_BHLNSX, "HIGH", "LOW"), data = ensemble_validation_data), pval = T)$plot + 
+  theme(legend.position = "none")
 
-CGGA_within_p <- ggarrange(plotlist = list(CGGA_GR_p$plot, CGGA_NIM_p$plot, CGGA_HOSS_p$plot, CGGA_PRGIT_p$plot, CGGA_BHLNSX_p$plot),
-          labels = c("GR", "NIM", "HOSS", "PRGIT", "BHLNSX"))
+CGGA_within_p <- ggarrange(plotlist = list(CGGA_GR_p, CGGA_NIM_p, CGGA_HOSS_p, CGGA_PRGIT_p, CGGA_BHLNSX_p),
+          labels = c("GR", "NIM", "HOSS", "PRGIT", "BHLNSX"), ncol = 5, common.legend = T) + 
+  ggtitle("Validation of Ensemble Method Within the CGGA")
 }
 CGGA_within_p
+annotate_figure(CGGA_within_p, top = text_grob("Validation of Methods Within the CGGA", 
+                                      color = "Black", face = "bold", size = 14))
 #TCGA surv analysis
 load('data/TCGA_data_survival.rdata')
 {
@@ -175,7 +185,7 @@ TCGA_samples$event <- ifelse(TCGA_survival_data$samples$event == "Dead", 1, 0)
 TCGA_event <- TCGA_samples$event
 TCGA_time <- TCGA_samples$time
 
-TCGA_GR <- ifelse(TCGA_binary$GR, "HIGH", "LOW")
+Risk_Score <- ifelse(TCGA_binary$GR, "HIGH", "LOW")
 TCGA_NIM <- ifelse(TCGA_binary$NIM, "HIGH", "LOW")
 TCGA_HOSS <- ifelse(TCGA_binary$HOSS, "HIGH", "LOW")
 TCGA_PRGIT <- ifelse(TCGA_binary$PRGIT, "HIGH", "LOW")
@@ -183,31 +193,38 @@ TCGA_BHLNSX <- ifelse(TCGA_binary$BHLNSX, "HIGH", "LOW")
 
 TCGA_GR_p <- ggsurvplot(survfit(Surv(TCGA_time,
                         TCGA_event) ~
-                     TCGA_GR, data = TCGA_samples), pval = T)
+                     Risk_Score, data = TCGA_samples), pval = T)$plot +
+  theme(legend.position = "none")
 
 TCGA_NIM_p <- ggsurvplot(survfit(Surv(TCGA_time,
                         TCGA_event) ~
-                     TCGA_NIM, data = TCGA_samples), pval = T)
+                     TCGA_NIM, data = TCGA_samples), pval = T)$plot +
+  theme(legend.position = "none")
 
 TCGA_HOSS_p <-ggsurvplot(survfit(Surv(TCGA_time,
                         TCGA_event) ~
-                     TCGA_HOSS, data = TCGA_samples), pval = T)
+                     TCGA_HOSS, data = TCGA_samples), pval = T)$plot +
+  theme(legend.position = "none")
 
 TCGA_PRGIT_p <-ggsurvplot(survfit(Surv(TCGA_time,
                         TCGA_event) ~
-                     TCGA_PRGIT, data = TCGA_samples), pval = T)
+                     TCGA_PRGIT, data = TCGA_samples), pval = T)$plot +
+  theme(legend.position = "none")
 
 TCGA_BHLNSX_p <-ggsurvplot(survfit(Surv(TCGA_time,
                         TCGA_event) ~
-                     TCGA_BHLNSX, data = TCGA_samples), pval = T)
+                     TCGA_BHLNSX, data = TCGA_samples), pval = T)$plot +
+  theme(legend.position = "none")
 
-TCGA_p <- ggarrange(plotlist = list(TCGA_GR_p$plot, TCGA_NIM_p$plot,
-                          TCGA_HOSS_p$plot, TCGA_PRGIT_p$plot,
-                          TCGA_BHLNSX_p$plot), labels = c('GR', 'NIM', "HOSS", "PRGIT", "BHLNSX"), ncol = 5) +
-  ggtitle("Within TCGA Log 2 CPM Survival Analysis")
+TCGA_p <- ggarrange(plotlist = list(TCGA_GR_p, TCGA_NIM_p,
+                          TCGA_HOSS_p, TCGA_PRGIT_p,
+                          TCGA_BHLNSX_p), labels = c('GR', 'NIM', "HOSS", "PRGIT", "BHLNSX"), ncol = 5, common.legend = T)
 
 ggsave('plots/prev_method_results/TCGA_log2cpm.png', plot = TCGA_p, width = 3000, height = 3000/1.846, units = 'px')
 }
+
+annotate_figure(TCGA_p, top = text_grob("Validation of Methods Within the TCGA", 
+                                               color = "Black", face = "bold", size = 14))
 
 ##REPEATED WITH CPM rather than log2 CPM
 {TCGA_res <- prev_methods_results_cpm[gsub('\\.', '-', rownames(binary_results)) %in% TCGA_survival_data$samples$patient,]

@@ -77,9 +77,6 @@ key_genes_pure_tumor <- cbind(data.frame(c_RNA1), data.frame(c_RNA2)) %>%
 key_genes_pure_tumor <- key_genes_pure_tumor[rownames(key_genes_pure_tumor) %in% genes_I_care_about,]
 key_genes_pure_tumor$GENENAME <- rownames(key_genes_pure_tumor)
 
-data.frame(GR = ,
-           NIM = prev_method_calculator(NIM_Sig, NIM_coef, key_genes_pure_tumor))
-
 GR_sig_tum <- prev_method_calculator(GR_Sig, GR_coef, key_genes_pure_tumor)
 NIM_sig_tum <- prev_method_calculator(NIM_Sig, NIM_coef, key_genes_pure_tumor)
 HOSS_sig_tum <- prev_method_calculator(HOSS_Sig, HOSS_coef, key_genes_pure_tumor)

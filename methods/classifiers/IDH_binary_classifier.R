@@ -2,15 +2,8 @@
 library(tidyverse)
 library(caret)
 library(caretEnsemble)
-library(psych)
-library(Amelia)
-library(mice)
-library(GGally)
+
 library(rpart)
-library(randomForest)
-library(modelr)
-library(broom)
-library(ISLR)
 library(e1071)
 
 set.seed(180018876)
@@ -48,7 +41,8 @@ x = training[,1:5]
 y = training$outcome
 
 #Train a decision tree with 5 cross validation folds
-model = train(x,y,'rpart',trControl=trainControl(method='cv',number=5))
+model = train(x,y,'rpart',trControl=trainControl(method='cv',number=5),
+              parms = list(split = "gini"))
 model
 #confusiong matrix on CGGA test set
 confusionMatrix(predict(model, newdata = testing), testing$outcome)
@@ -83,7 +77,7 @@ IDH_test$predict <- ifelse(predict(model, newdata = IDH_test[,c(1:5)]) == 0, "ID
 IDH_visualization_data <- rbind(Astrid_test, IDH_train[,c(1:5,7,8)], IDH_test[,c(1:5,7,8)])
 IDH_visualization_data$source <- as.factor(IDH_visualization_data$source)
 
-IDH_visualization_data$IDH <- c(rep("Unknown",9), ifelse(IDH_train$outcome == 1, "IDH_Mutant", "IDH_WT"), ifelse(IDH_test$outcome == 1, "IDH_Mutant", "IDH_WT"))
+IDH_visualization_data$IDH <- c(rep("IDH_WT",9), ifelse(IDH_train$outcome == 1, "IDH_Mutant", "IDH_WT"), ifelse(IDH_test$outcome == 1, "IDH_Mutant", "IDH_WT"))
 
 IDH_visualization_data
 library(rpart.plot)
@@ -127,7 +121,8 @@ ggplot(IDH_visualization_data[,c("RBP1", "HMX1")]) +
   geom_point(aes(x = RBP1, y = HMX1, col = IDH_visualization_data$IDH, pch = Source)) +
   geom_segment(aes(x = 5.7, y = 2.2, xend = -5, yend = 2.2)) +
   geom_segment(aes(x = 5.7, y = 2.2, xend = 5.7, yend = 10)) +
-  ggtitle("Plot of 2 Key Genes Used in IDH-Signature with Boundary Lines")
+  ggtitle("Plot of 2 Key Genes Used in IDH-Signature with Boundary Lines") +
+  labs(col = "IDH-Type")
 
 
 IDH_PCA2_plot
@@ -169,7 +164,7 @@ survival_TCGA_IDH$IDH <- ifelse(survival_TCGA_IDH$IDH == "WT", "Wildtype", "Muta
 survival_combined_IDH <- rbind(survival_TCGA_IDH, survival_CGGA_IDH)
 
 #Survival for combined
-ggsurvplot(survfit(Surv(survival_combined_IDH$time, survival_combined_IDH$event) ~ survival_combined_IDH$IDH), data =survival_combined_IDH, pval = T) +
+ggsurvplot(survfit(Surv(survival_combined_IDH$time, survival_combined_IDH$event) ~ survival_combined_IDH$IDH), data =survival_combined_IDH, pval = T, risk.table = T) +
   ggtitle("Survival stratified by IDH type in full dataset")
 
 
