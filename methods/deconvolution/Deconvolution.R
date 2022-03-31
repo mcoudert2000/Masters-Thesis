@@ -2,25 +2,21 @@ require(immunedeconv)
 require(ggplot2)
 require(estimate)
 
-set_cibersort_binary("/Users/matthewcoudert/Maths/2021:22/Masters-Thesis/data/Cibersort/CIBERSORT.R")
-set_cibersort_mat("/Users/matthewcoudert/Maths/2021:22/Masters-Thesis/data/Cibersort/LM22.txt")
-
 #Load full dataset
 load('data/combined_data.rdata')
 
 deconvolution_data <- as.matrix(combined_data_normalized$E)
 
-#View(deconvolution_data)
-
-#deconv_res_cibersort <- deconvolute(deconvolution_data, method = 'cibersort')
-
+#deconvolute using xcell
 deconv_res_xcell <- deconvolute(deconvolution_data, method = 'xcell')
 
+#extract immune and stroma scores
 immune_stroma_scores <- as.data.frame(deconv_res_xcell[37:38,])
 
 rownames(immune_stroma_scores) <- immune_stroma_scores$cell_type
 immune_stroma_scores <- dplyr::select(immune_stroma_scores, -cell_type)
 
+#categorize samples as high or low immune/stroma scores
 meds <- c(median(as.numeric(immune_stroma_scores[1,])), median(as.numeric(immune_stroma_scores[2,])))
 binary_results <- immune_stroma_scores
 for(i in 1:2) {
@@ -28,22 +24,18 @@ for(i in 1:2) {
 }
 binary_results[1:9]
 
-load('data/combined_data.rdata')
+### ESTIMATE
 estimate_data <- combined_data_normalized$E
 
+#THIS IS THE WORKFLOW FROM ESTIMATE VIGNETTE
 write.table(estimate_data, file = 'data/estimate_normalized_counts.txt', sep = '\t', quote = F)
-
-
 filterCommonGenes(input.f = 'data/estimate_normalized_counts.txt', 
                   output.f = 'results/estimate/GBM_10412genes.gct',
                   id = 'GeneSymbol')
-
 estimateScore("results/estimate/GBM_10412genes.gct", "results/estimate/GBM_estimate_score.gct", platform="illumina") #check to make sure this is the correct platform
-
-#plotPurity(scores = "results/estimate/GBM_estimate_score.gct", platform = 'affymetrix')
-
 estimate_scores <- read.delim(file="results/estimate/GBM_estimate_score.gct", skip=2, quote = " ")[,1:400]
 
+#format them nicely for later analysis
 estimate_scores <- t(estimate_scores)
 colnames(estimate_scores) <- estimate_scores[1,]
 estimate_scores <- as.data.frame(estimate_scores[3:400,])
@@ -51,19 +43,19 @@ estimate_scores[] <- lapply(estimate_scores, as.numeric)
 
 estimate_scores$tumor_purity <- cos(estimate_scores$ESTIMATEScore *0.0001467884+0.6049872018) #https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3826632/
 
-dim(estimate_scores)
 rownames(estimate_scores) <- gsub('\\.', '-', rownames(estimate_scores))
 save(estimate_scores, file = 'results/estimate_scores.rdata')
 
-#Checking if there is a difference between TCGA and CGGA samples.
-t.test(estimate_scores[grep("TCGA", rownames(estimate_scores)),]$tumor_purity, estimate_scores[grep("CGGA", rownames(estimate_scores)),]$tumor_purity)
 
+#Checking if there is a difference in tumor between TCGA and CGGA samples.
+t.test(estimate_scores[grep("TCGA", rownames(estimate_scores)),]$tumor_purity, estimate_scores[grep("CGGA", rownames(estimate_scores)),]$tumor_purity)
 
 #seeing risk categories for Astrid Samples
 data.frame(sample = rownames(estimate_scores)[1:9],
            stromal = ifelse(estimate_scores$StromalScore > median(estimate_scores$StromalScore), "HIGH", "LOW")[1:9],
            immune = ifelse(estimate_scores$StromalScore > median(estimate_scores$ImmuneScore), "HIGH", "LOW")[1:9])[c(7:9,1,2,6,3:5),]
 
+#Estimate vs Astrid Tumor Purity
 ggplot(data.frame(sample = rownames(estimate_scores)[1:9],
            tumor_purity_est = round(estimate_scores$tumor_purity[1:9],2),
            tumor_purity_astrid = round(Astrid_data$samples$tumor_content,2))[c(7:9,1,2,6,3:5),]) +
@@ -75,11 +67,12 @@ ggplot(data.frame(sample = rownames(estimate_scores)[1:9],
   xlim(c(0.2, 1)) + ylim(c(0.2,1))
 
 #Survival analysis of Stromal and Immune Scores
-print(load('data/CGGA/CGGA_data.RDATA'))
+load('data/CGGA/CGGA_data.RDATA')
 
 deconv_validation <- CGGA_data$samples
 deconv_validation <- ensemble_validation[!is.na(ensemble_validation$OS), ]
 #12 samples removed
+#estimate scores for CGGA samples
 CGGA_est_scores <- estimate_scores[grep('CGGA',rownames(estimate_scores)),]
 
 CGGA_est_scores <- CGGA_est_scores[!is.na(CGGA_data$samples$OS),]
@@ -110,6 +103,7 @@ deconv_fit <- survfit(deconv_surv_obj ~ estCat, data = deconv_validation_data)
 estimate_plot <- ggsurvplot(deconv_fit, pval = T)
 
 require(ggpubr)
+#arrange the plots into 1
 ggarrange(plotlist = list(stromal_plot$plot, immune_plot$plot, estimate_plot$plot),
           labels = c("Stromal", "Immune", "Estimate"), ncol = 3)
 
@@ -136,8 +130,11 @@ ggarrange(plotlist = list(TCGA_strom_p$plot, TCGA_imm_p$plot, TCGA_est_p$plot),
 
 
 #Plots
+
+#calculate correlation between immune and stromal score
 cor(estimate_scores$ImmuneScore, estimate_scores$StromalScore)
 
+#plot of immune vs stromal score
 ggplot(estimate_scores) +
   geom_point(data = estimate_scores[10:248,], aes(x = StromalScore, y = ImmuneScore, col = 'CGGA')) +
   geom_point(data = estimate_scores[1:9,], aes(x = StromalScore, y = ImmuneScore, col = 'ASTRID\'s')) +
@@ -163,13 +160,6 @@ ggplot(estimate_scores) +
 #Idea: RNA_tot = RNA_tumor * tumor_content + RNA_non_tumor * (1 - tumor_content)
 load('data/Astrid_data_counts.rdata')
 
-#R2A <- cpm(Astrid_data$counts[,'R2A'])
-#R2C <- cpm(Astrid_data$counts[,'R2C'])
-
-#R1B <- cpm(Astrid_data$counts[,'R1B'])
-#R1C <- cpm(Astrid_data$counts[,'R1C'])
-
-
 R2A <- combined_data_normalized$E[,'R2A']
 R2C <- combined_data_normalized$E[,'R2C']
 
@@ -183,28 +173,25 @@ R1C <- combined_data_normalized$E[,'R1C']
 R1C_tp <- estimate_scores[6,]$tumor_purity
 R1B_tp <- estimate_scores[2,]$tumor_purity
 
-R2A_tp - R2C_tp
+#check for stability
+R2A_tp - R2C_tp #very small difference in tumor content
 R1C_tp - R1B_tp
-c_RNA2 <- ( R2A - R2C + R2A_tp * R2C - R2C_tp * R2A ) / (R2A_tp - R2C_tp)
+c_RNA2 <- ( R2A - R2C + R2A_tp * R2C - R2C_tp * R2A ) / (R2A_tp - R2C_tp) #solve the linear equation
 c_RNA1 <- ( R1B - R1C + R1B_tp * R1C - R1C_tp * R1B ) / (R1B_tp - R1C_tp)
 #This is (theoretically) isolated cancer RNA
 
-
-
+#write to file
 save(c_RNA1, c_RNA2, file = 'results/estimate/isolated_tumor.rdata')
 
 isolated_tumor <- data.frame(c_RNA1 = c_RNA1, c_RNA2 = c_RNA2)
-#write.table(isolated_tumor, file = 'results/estimate/isolated_tumor.txt', sep = '\t',quote = F)
 
 
+#calculate isolated tumor, ESTIMATE tumor content 
 filterCommonGenes(input.f = 'results/estimate/isolated_tumor.txt', 
                   output.f = 'results/estimate/isolated_tumor.gct',
                   id = 'GeneSymbol')
-
 estimateScore("results/estimate/isolated_tumor.gct", "results/estimate/isolated_tumor_estimate_score.gct", platform="illumina") #check to make sure this is the correct platform
-
 isolated_estimate_scores <- read.delim(file="results/estimate/isolated_tumor_estimate_score.gct", skip=2, quote = " ")[,2:4]
-
 
 rownames(isolated_estimate_scores) <- isolated_estimate_scores$Description
 isolated_estimate_scores <- isolated_estimate_scores %>%
