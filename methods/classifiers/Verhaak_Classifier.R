@@ -132,14 +132,16 @@ ggplot(d) +
 
 verhaak_viz_data <- (data.frame(PCA(verhaak_data, graph = F)$ind$coord))
 
-correctly_classified = ifelse(verhaak_results$categories == verhaak_results$categories,
-              'green', 'red')
+correctly_classified = ifelse(verhaak_results$categories == verhaak_results$subtype,
+              'correct', 'incorrect')
                    
 categories = verhaak_results$categories
 ggplot(verhaak_viz_data) + 
-  geom_point(aes(x = Dim.1, y = Dim.2, shape = categories, col = error_rate)) +
-  scale_color_manual(values = c('green3','red')) +
-  ggtitle('PCA Plot of Verhaak Classification')
+  geom_point(aes(x = Dim.1, y = Dim.2, shape = correctly_classified, col = categories)) +
+  ggtitle('PCA Plot of Verhaak Classification') +
+  labs(shape = "Accuracy", col = "Subtype") +
+  scale_shape_manual(values = c(20, 4))
+  
 
 #Checking whether Tumor Content is a valuable metric for determining misclassification (THIS DOESNT WORK)
 load('results/estimate_scores.rdata')

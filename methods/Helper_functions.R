@@ -16,3 +16,12 @@ merge_duplicate_rows <- function(dat) {
   return(dplyr::select(out, -GENENAME))
 }
 
+colors = list(CGGA = "#D55E00", TCGA = "#56B4E9", 
+  Wendler = "#000000")
+
+colors_high_low = list(High = "#CC79A7", Low = "#E69F00")
+
+
+#scales::show_col(c("#D55E00","#56B4E9","#000000"))
+
+                   

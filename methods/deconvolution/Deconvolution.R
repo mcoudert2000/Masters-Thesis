@@ -1,6 +1,7 @@
 require(immunedeconv)
 require(ggplot2)
 require(estimate)
+require(ggsci)
 
 #Load full dataset
 load('data/combined_data.rdata')
@@ -46,6 +47,31 @@ estimate_scores$tumor_purity <- cos(estimate_scores$ESTIMATEScore *0.0001467884+
 rownames(estimate_scores) <- gsub('\\.', '-', rownames(estimate_scores))
 save(estimate_scores, file = 'results/estimate_scores.rdata')
 
+#Comparing xcell and ESTIMATE
+estimate_v_xcell <- cbind(estimate_scores, t(immune_stroma_scores)) %>%
+  dplyr::select(-c("ESTIMATEScore", "tumor_purity"))
+colnames(estimate_v_xcell) <- c("ESTIMATE_Stromal", "ESTIMATE_Immune",
+                                "xcell_Stromal", "xcell_Immune")
+
+#they are on different scales so scale to mean 0 and sd 1
+estimate_v_xcell <- data.frame(scale(estimate_v_xcell))
+
+#plotting stromal xcell v stromal ESTIMATE
+ggplot(estimate_v_xcell) +
+  geom_point(aes(x = ESTIMATE_Stromal, y = xcell_Stromal), alpha = 0.4) +
+  geom_text(aes(x = -1.2, y = 4), 
+            label = paste("correlation", 
+                          round(cor(estimate_v_xcell$ESTIMATE_Stromal, 
+                                    estimate_v_xcell$xcell_Stromal),3))) +
+  xlab("ESTIMATE Stromal Score") + ylab("xcell Stromal Score") + ggtitle("ESTIMATE v xcell Stromal Score")
+
+ggplot(estimate_v_xcell) +
+  geom_point(aes(x = ESTIMATE_Immune, y = xcell_Immune), alpha = 0.4) +
+  geom_text(aes(x = -1, y = 4), 
+            label = paste("correlation", 
+                          round(cor(estimate_v_xcell$ESTIMATE_Immune, 
+                                    estimate_v_xcell$xcell_Immune),3))) +
+  xlab("ESTIMATE Immune Score") + ylab("xcell Immune Score") + ggtitle("ESTIMATE v xcell Immune Score")
 
 #Checking if there is a difference in tumor between TCGA and CGGA samples.
 t.test(estimate_scores[grep("TCGA", rownames(estimate_scores)),]$tumor_purity, estimate_scores[grep("CGGA", rownames(estimate_scores)),]$tumor_purity)
@@ -60,17 +86,18 @@ ggplot(data.frame(sample = rownames(estimate_scores)[1:9],
            tumor_purity_est = round(estimate_scores$tumor_purity[1:9],2),
            tumor_purity_astrid = round(Astrid_data$samples$tumor_content,2))[c(7:9,1,2,6,3:5),]) +
   geom_point(aes(x = tumor_purity_est, y = tumor_purity_astrid)) +
-  geom_text(aes(x = tumor_purity_est, y = tumor_purity_astrid), label = rownames(estimate_scores)[c(7:9,1,2,6,3:5)], hjust = 0.1, vjust = 0.1) +
-  geom_abline(slope = 1, intercept = 0) +
-  xlab('Estimate Tumor Purity') + ylab('Astrid Tumor Purity') +
-  ggtitle('Estimate vs Astrid Tumor Purity') +
-  xlim(c(0.2, 1)) + ylim(c(0.2,1))
+  geom_text_repel(aes(x = tumor_purity_est, y = tumor_purity_astrid), label = rownames(estimate_scores)[c(7:9,1,2,6,3:5)], hjust = 0.1, vjust = 0.1) +
+  geom_abline(slope = 1, intercept = 0, linetype = 'dashed') +
+  xlab('ESTIMATE Tumor Purity') + ylab('Crambled Tumor Purity') +
+  ggtitle('ESTIMATE vs Crambled Tumor Purity') +
+  xlim(c(0.2, 1)) + ylim(c(0.2,1)) +
+  theme_minimal()
 
 #Survival analysis of Stromal and Immune Scores
 load('data/CGGA/CGGA_data.RDATA')
 
 deconv_validation <- CGGA_data$samples
-deconv_validation <- ensemble_validation[!is.na(ensemble_validation$OS), ]
+deconv_validation <- deconv_validation[!is.na(deconv_validation$OS), ]
 #12 samples removed
 #estimate scores for CGGA samples
 CGGA_est_scores <- estimate_scores[grep('CGGA',rownames(estimate_scores)),]
@@ -90,22 +117,27 @@ require(survminer)
 #Validating on Stromal score
 deconv_surv_obj <- Surv(time = deconv_validation_data$OS, event = deconv_validation_data$event)
 deconv_fit <- survfit(deconv_surv_obj ~ stromalCat, data = deconv_validation_data)
-stromal_plot <-ggsurvplot(deconv_fit, pval = T)
+stromal_plot <-ggsurvplot(deconv_fit, pval = T, xlim = c(0,2000), xlab = "")$plot + 
+  scale_color_manual(values = c(colors_high_low$High, colors_high_low$Low))
 
 #Validating on Immune Score
 deconv_surv_obj <- Surv(time = deconv_validation_data$OS, event = deconv_validation_data$event)
 deconv_fit <- survfit(deconv_surv_obj ~ immuneCat, data = deconv_validation_data)
-immune_plot <- ggsurvplot(deconv_fit, pval = T)
+immune_plot <- ggsurvplot(deconv_fit, pval = T, xlim = c(0,2000), ylab = "",xlab = "Time (days)",  legend.labs = c("High", "Low"), legend.title = "")$plot +
+  scale_color_manual(values = c(colors_high_low$High, colors_high_low$Low))
 
 #Validating on Estimate Score
 deconv_surv_obj <- Surv(time = deconv_validation_data$OS, event = deconv_validation_data$event)
 deconv_fit <- survfit(deconv_surv_obj ~ estCat, data = deconv_validation_data)
-estimate_plot <- ggsurvplot(deconv_fit, pval = T)
+estimate_plot <- ggsurvplot(deconv_fit, pval = T, xlim = c(0,2000), ylab = "", xlab ="")$plot +
+  scale_color_manual(values = c(colors_high_low$High, colors_high_low$Low))
 
 require(ggpubr)
 #arrange the plots into 1
-ggarrange(plotlist = list(stromal_plot$plot, immune_plot$plot, estimate_plot$plot),
-          labels = c("Stromal", "Immune", "Estimate"), ncol = 3)
+annotate_figure(ggarrange(plotlist = list(stromal_plot, immune_plot, estimate_plot),
+          labels = c("Stromal", "Immune", "Estimate"), ncol = 3, common.legend = T,
+          legend.grob = get_legend(immune_plot)),
+          top = "Kaplan-Meier plots for Stromal, Immune and ESTIMATE stratification within the CGGA")
 
 #Validating in TCGA data
 load('data/TCGA_data_survival.rdata')
@@ -120,12 +152,22 @@ TCGA_estCat <- ifelse(TCGA_est_scores$ESTIMATEScore > median(TCGA_est_scores$EST
 TCGA_time <- TCGA_survival_data$samples$time
 TCGA_event <- ifelse(TCGA_survival_data$samples$event == "Dead", 1, 0)
 
-TCGA_strom_p <- ggsurvplot(survfit(Surv(TCGA_time, TCGA_event) ~ TCGA_stromCat), data = TCGA_survival_samples, pval = T)
-TCGA_imm_p <- ggsurvplot(survfit(Surv(TCGA_time, TCGA_event) ~ TCGA_immuneCat), data = TCGA_survival_samples, pval = T)
-TCGA_est_p <- ggsurvplot(survfit(Surv(TCGA_time, TCGA_event) ~ TCGA_estCat), data = TCGA_survival_samples, pval = T)
+TCGA_strom_p <- ggsurvplot(survfit(Surv(TCGA_time, TCGA_event) ~ TCGA_stromCat), data = TCGA_survival_samples, 
+           pval = T, legend = "none", xlab = "")$plot +
+  scale_color_manual(values = c(colors_high_low$High, colors_high_low$Low))
 
-ggarrange(plotlist = list(TCGA_strom_p$plot, TCGA_imm_p$plot, TCGA_est_p$plot),
-          labels = c("Stromal", "Immune", "EstimateScore"), ncol = 3)
+TCGA_imm_p <- ggsurvplot(survfit(Surv(TCGA_time, TCGA_event) ~ TCGA_immuneCat), 
+                         data = TCGA_survival_samples, pval = T,ylab = "", xlab = "Time (days)", legend.title = "",legend.labs = c("High", "Low"))$plot +
+  scale_color_manual(values = c(colors_high_low$High, colors_high_low$Low))
+TCGA_est_p <- ggsurvplot(survfit(Surv(TCGA_time, TCGA_event) ~ TCGA_estCat), 
+                         data = TCGA_survival_samples, pval = T, xlab = "",legend = "none", ylab = "")$plot +
+  scale_color_manual(values = c(colors_high_low$High, colors_high_low$Low))
+
+annotate_figure(ggarrange(plotlist = list(TCGA_strom_p, TCGA_imm_p, TCGA_est_p),
+          labels = c("Stromal", "Immune", "EstimateScore"), ncol = 3, common.legend = T,
+          legend.grob = get_legend(TCGA_imm_p)),
+          top = "Kaplan-Meier plots for Stromal, Immune and ESTIMATE stratification within the TCGA")
+
 
 
 
@@ -135,13 +177,17 @@ ggarrange(plotlist = list(TCGA_strom_p$plot, TCGA_imm_p$plot, TCGA_est_p$plot),
 cor(estimate_scores$ImmuneScore, estimate_scores$StromalScore)
 
 #plot of immune vs stromal score
+#figure 3
 ggplot(estimate_scores) +
-  geom_point(data = estimate_scores[10:248,], aes(x = StromalScore, y = ImmuneScore, col = 'CGGA')) +
-  geom_point(data = estimate_scores[1:9,], aes(x = StromalScore, y = ImmuneScore, col = 'ASTRID\'s')) +
-  geom_point(data = estimate_scores[249:398,], aes(x = StromalScore, y = ImmuneScore, col = 'TCGA')) +
-  geom_smooth(data = estimate_scores, aes(x = StromalScore, y = ImmuneScore), method = lm, se = T, linetype = 2, col = 'black') +
-  ggtitle("Stromal Score vs Immune Score") +
-  labs(col = "Source")
+  geom_point(data = estimate_scores[10:248,], aes(x = StromalScore, y = ImmuneScore, col = 'CGGA'), pch = 16, alpha = 0.8) +
+  geom_point(data = estimate_scores[1:9,], aes(x = StromalScore, y = ImmuneScore, col = 'Wendler'), pch = 3, alpha = 1, size = 2) +
+  geom_point(data = estimate_scores[249:398,], aes(x = StromalScore, y = ImmuneScore, col = 'TCGA'), pch = 16, alpha = 0.8) +
+  ggtitle("ESTIMATE Stromal Score vs Immune Score") +
+  theme_minimal() + 
+  xlab("Stromal Score") + ylab("Immune Score") +
+  scale_color_manual(values = colors) +
+  labs(col = "Source") +
+  guides(col = guide_legend(override.aes = list(shape = c(16, 16, 3))))
 
 ggplot(estimate_scores[10:248,]) +
   geom_point(aes(x = -1, y = ESTIMATEScore, col = 'CGGA'), alpha =0.3) +
@@ -153,6 +199,12 @@ ggplot(estimate_scores[10:248,]) +
 ggplot(estimate_scores) +
   geom_boxplot(aes(x = tumor_purity)) +
   coord_flip() 
+
+#figure 9A
+ggplot(estimate_scores) +
+  geom_histogram(aes(x = tumor_purity), bins = 10) +
+  theme_minimal() + xlab("Tumor Purity") + ylab("Count") +
+  ggtitle("ESTIMATE tumor purity histogram")
 
 
 ### Linear Equation Solver

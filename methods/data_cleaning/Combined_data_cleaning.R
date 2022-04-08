@@ -27,7 +27,7 @@ T_samples <- TCGA_data$samples %>%
   dplyr::select(c("sample", "lib.size", "IDH"))
 
 #add source column
-A_samples$source <- rep("Astrid",length(A_samples[,1]))
+A_samples$source <- rep("Wendler",length(A_samples[,1]))
 T_samples$source <- rep("TCGA",length(T_samples[,1]))
 C_samples$source <- rep("CGGA",length(C_samples[,1]))
 

@@ -73,6 +73,8 @@ TCGA_survival_counts <- TCGA_counts[,!is.na(TCGA_samples$time) & TCGA_samples$ev
 
 TCGA_survival_data <- DGEList(counts = TCGA_survival_counts, samples = TCGA_survival_samples)
 
+TCGA_survival_data$samples$time
+
 #write both to disk
 save(TCGA_data, file = 'data/TCGA_data_full.rdata')
 save(TCGA_survival_data, file = 'data/TCGA_data_survival.rdata')

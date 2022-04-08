@@ -40,19 +40,21 @@ pca_plot_tum <- PCA(t(cbind(PCA_key_genes_data$E, pure_tumor)), scale.unit = T, 
 d2 <- as.data.frame(pca_plot_tum$ind$coord)
 d2$label <- c(colnames(PCA_key_genes_data), "C1", "C2")
 
-#axes 2 and 3 w/ pure tumor
+#axes 2 and 3 w/ pure tumor #figure 15
 fviz_pca_ind(pca_plot_tum, col.ind = F, geom.ind = F, geom.var = F, repel = T, axes = c(2,3)) + 
-  geom_point(aes(x = d2$Dim.2, y = d2$Dim.3, col = c(PCA_key_genes_data$targets$source, "Astrid", "Astrid"))) + 
-  geom_text(data = d2[c(1:9, 399,400),], aes(x = Dim.2, y = Dim.3, label = label), hjust = -.1, vjust =-.1) +
+  geom_point(aes(x = d2$Dim.2, y = d2$Dim.3, col = c(PCA_key_genes_data$targets$source, "Wendler", "Wendler"))) + 
+  geom_text_repel(data = d2[c(1:9, 399,400),], aes(x = Dim.2, y = Dim.3, label = label), hjust = -.1, vjust =-.1) +
   labs(col = "Source") +
+  scale_color_manual(values = c(colors$CGGA, colors$TCGA, colors$Wendler)) +
   ggtitle("PCA plot of key genes with pure tumor included (2,3)")
   
-#Axes 1 and 2 w/ pure tumor
+#Axes 1 and 2 w/ pure tumor #figure 14
 fviz_pca_ind(pca_plot_tum, col.ind = F, geom.ind = F, geom.var = F, repel = T, axes = c(1,2)) + 
-  geom_point(aes(x = d2$Dim.1, y = d2$Dim.2, col = c(PCA_key_genes_data$targets$source, "Astrid", "Astrid"))) + 
-  geom_text(data = d2[c(1:9, 399,400),], aes(x = Dim.1, y = Dim.2, label = label), hjust = -.1, vjust =-.1) +
+  geom_point(aes(x = d2$Dim.1, y = d2$Dim.2, col = c(PCA_key_genes_data$targets$source, "Wendler", "Wendler"))) + 
+  geom_text_repel(data = d2[c(1:9, 399,400),], aes(x = Dim.1, y = Dim.2, label = label), hjust = -.1, vjust =-.1) +
   labs(col = "Source") +
-  ggtitle("PCA plot of key genes with pure tumor included (1,2)")
+  scale_color_manual(values = c(colors$CGGA, colors$TCGA, colors$Wendler)) +
+  ggtitle("PCA plot of key genes Dimensions: 1,2")
 
 
 
@@ -63,19 +65,24 @@ pca_full_plot <- PCA(t(cbind(PCA_full_dataset$E, (c_RNA1), (c_RNA2))), scale.uni
 
 d3 <- as.data.frame(pca_full_plot$ind$coord)
 d3$label <- c(colnames(PCA_key_genes_data), "C1", "C2")
-#dim 2,3
-fviz_pca_ind(pca_full_plot, col.ind = F, geom.ind = F, geom.var = F, repel = T, axes = c(2,3)) + 
-  geom_point(aes(x = d3$Dim.2, y = d3$Dim.3, col = c(PCA_key_genes_data$targets$source, "Astrid", "Astrid"))) + 
-  geom_text(data = d3[c(1:9, 399,400),], aes(x = Dim.2, y = Dim.3, label = label), hjust = -.1, vjust =-.1) +
-  labs(col = "Source") +
-  ggtitle("PCA plot of all genes with pure tumor included (2,3)")
 
-#dim 1,2
-fviz_pca_ind(pca_full_plot, col.ind = F, geom.ind = F, geom.var = F, repel = T, axes = c(1,2)) + 
-  geom_point(aes(x = d3$Dim.1, y = d3$Dim.2, col = c(PCA_key_genes_data$targets$source, "Astrid", "Astrid"))) + 
-  geom_text(data = d3[c(1:9, 399,400),], aes(x = Dim.1, y = Dim.2, label = label), hjust = -.1, vjust =-.1) +
+#dim 2,3 figure 19
+fviz_pca_ind(pca_full_plot, col.ind = F, geom.ind = F, geom.var = F, repel = T, axes = c(2,3)) + 
+  geom_point(aes(x = d3$Dim.2, y = d3$Dim.3, col = c(PCA_key_genes_data$targets$source, "Wendler", "Wendler"))) + 
+  geom_text_repel(data = d3[c(1:9, 399,400),], aes(x = Dim.2, y = Dim.3, label = label), hjust = -.1, vjust =-.1) +
   labs(col = "Source") +
-  ggtitle("PCA plot of all genes with pure tumor included (1,2)")
+  scale_color_manual(values = c(colors$CGGA, colors$TCGA, colors$Wendler)) +
+  ggtitle("PCA Plot of All Genes with Pure Tumor, Dims: 2,3")
+
+#dim 1,2 figure 18
+require(ggrepel)
+fviz_pca_ind(pca_full_plot, col.ind = F, geom.ind = F, geom.var = F, repel = T, axes = c(1,2)) + 
+  geom_point(aes(x = d3$Dim.1, y = d3$Dim.2, col = c(PCA_key_genes_data$targets$source, "Wendler", "Wendler"))) + 
+  #geom_text(data = d3[c(1:9, 399,400),], aes(x = Dim.1, y = Dim.2, label = label), hjust = -.1, vjust =-.1) +
+  geom_text_repel(data = d3[c(1:9, 399,400),], aes(x = Dim.1, y = Dim.2, label = label))+
+  labs(col = "Source") +
+  scale_color_manual(values = c(colors$CGGA, colors$TCGA, colors$Wendler)) +
+  ggtitle("PCA Plot of All Genes with Pure Tumor, Dims: 1,2")
 
 #Investigating outliers on full plot
 pca_outliers <- rownames(pca_full_plot$ind$coord[pca_full_plot$ind$coord[,'Dim.2'] > 100,])
@@ -111,15 +118,21 @@ ggsurvplot(survfit(Surv(time = pca_outlier_survival_data$time,
 
 load('results/estimate_scores.rdata')
 
-#Clustering on key genes colored by ESTIMATE tumor purity (dim1/2)
+#Clustering on key genes colored by ESTIMATE tumor purity (dim1/2) 
+#figure 16
 fviz_pca_ind(pca_plot, col.ind = F, geom.ind = F, geom.var = F, repel = T, axes = c(1,2)) +
   geom_point(aes(x = d$Dim.1, y = d$Dim.2, col = estimate_scores$tumor_purity)) +
-  geom_text(data = d[1:9,], aes(x = Dim.1, y = Dim.2, label = label), hjust = -.1, vjust =-.1)
+  geom_text_repel(data = d[1:9,], aes(x = Dim.1, y = Dim.2, label = label), hjust = -.1, vjust =-.1) +
+  ggtitle("PCA Plot Colored by ESTIMATE Tumor Purity Dim: 1,2") +
+  labs(col = "ESTIMATE tumor purity")
 
 #Clustering on key genes colored by ESTIMATE tumor purity (dim2/3)
+#figure 17
 fviz_pca_ind(pca_plot, col.ind = F, geom.ind = F, geom.var = F, repel = T, axes = c(2,3)) +
   geom_point(aes(x = d$Dim.2, y = d$Dim.3, col = estimate_scores$tumor_purity)) +
-  geom_text(data = d[1:9,], aes(x = Dim.2, y = Dim.3, label = label), hjust = -.1, vjust =-.1)
+  geom_text_repel(data = d[1:9,], aes(x = Dim.2, y = Dim.3, label = label), hjust = -.1, vjust =-.1) +
+  ggtitle("PCA Plot Colored by ESTIMATE Tumor Purity Dim: 2,3") +
+  labs(col = "ESTIMATE tumor purity")
 
 
 #CLUSTER
@@ -130,7 +143,7 @@ d
 #Try sillouette as well
 kclust_pca_data <- scale(t(PCA_key_genes_data$E))
 
-fviz_nbclust(kclust_pca_data, kmeans, method = "wss")
+
 
 gap_stat <- clusGap(kclust_pca_data,
                     FUN = kmeans,
@@ -138,21 +151,36 @@ gap_stat <- clusGap(kclust_pca_data,
                     K.max = 10,
                     B = 50)
 
-fviz_nbclust(kclust_pca_data, kmeans, method='silhouette')
+#figure 20
+set.seed(180018876)
+annotate_figure(ggarrange(plotlist = list(silhoette = fviz_nbclust(kclust_pca_data, kmeans, method='silhouette') + labs(title = "Silhoette Width"), 
+                          wss = fviz_nbclust(kclust_pca_data, kmeans, method='wss') + labs(title = "Elbow Selection"),
+                          gap = fviz_nbclust(kclust_pca_data, kmeans, method='gap')), nrow = 1) + labs(title = "Gap Statistic"),
+              top = "Results of Various Methods to Determine # Clusters for KMeans")
 
 
 #plot number of clusters vs. gap statistic
 fviz_gap_stat(gap_stat)
+set.seed(2023)
 
-kplots2 <- fviz_cluster(kmeans(kclust_pca_data, centers = 2), data = kclust_pca_data, labelsize = 10*as.numeric(PCA_key_genes_data$targets$source == "Astrid"), repel = F)
-kplots3 <- fviz_cluster(kmeans(kclust_pca_data, centers = 3), data = kclust_pca_data, labelsize = 10*as.numeric(PCA_key_genes_data$targets$source == "Astrid"), repel = F)
-kplots4 <- fviz_cluster(kmeans(kclust_pca_data, centers = 4), data = kclust_pca_data, labelsize = 10*as.numeric(PCA_key_genes_data$targets$source == "Astrid"), repel = F)
+kmeans2 <- kmeans(kclust_pca_data, centers = 2)
+kmeans3 <- kmeans(kclust_pca_data, centers = 3)
+kmeans4 <- kmeans(kclust_pca_data, centers = 4)
+kplots2 <- fviz_cluster(kmeans2, data = kclust_pca_data, labelsize = 12*as.numeric(PCA_key_genes_data$targets$source == "Wendler"), repel = F)
+kplots3 <- fviz_cluster(kmeans3, data = kclust_pca_data, labelsize = 12*as.numeric(PCA_key_genes_data$targets$source == "Wendler"), repel = F)
+kplots4 <- fviz_cluster(kmeans4, data = kclust_pca_data, labelsize = 12*as.numeric(PCA_key_genes_data$targets$source == "Wendler"), repel = F)
 
-kplots9 <- fviz_cluster(kmeans(kclust_pca_data, centers = 9), data = kclust_pca_data, labelsize = 10*as.numeric(PCA_key_genes_data$targets$source == "Astrid"), repel = F) 
-kplots9
+sum(grepl("TCGA", rownames(dplyr::filter(data.frame(kmeans2$cluster), kmeans2.cluster == 1))))
+sum(grepl("TCGA", rownames(dplyr::filter(data.frame(kmeans2$cluster), kmeans2.cluster == 2))))
+
+sum(grepl("TCGA", rownames(dplyr::filter(data.frame(kmeans3$cluster), kmeans3.cluster == 3))))
+
 
 require(ggpubr)
-kmeans_plot <- ggarrange(kplots2, kplots3, kplots4, kplots9, labels = c("2","3","4","9"))
+require(gridExtra)
+kmeans_plot <- grid.arrange(grobs = list(kplots2, kplots3, kplots4), 
+                         layout_matrix = matrix(c(1, 1, 2, 2, 4, 3, 3, 4), nrow = 2, byrow = TRUE),
+                         top = "KMeans Clustering")
 kmeans_plot
 #save plot
 png(filename = "plots/KMeans Clustering on Results from Various Gene Signature Studies.png",

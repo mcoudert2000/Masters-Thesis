@@ -8,14 +8,18 @@ genes_I_care_about <- c(GR_Sig, NIM_Sig, HOSS_Sig, PRGIT_Sig, BHLNSX_Sig)
 
 #Load in data
 load('data/combined_data.rdata')
+
+#isolate dataset to only genes within the classifiers
 key_genes_data <- data.frame(combined_data_normalized$E[rownames(combined_data_normalized$E) %in% genes_I_care_about,])
 
+#get cpm data rather than log2 cpm to calculate surival for both as it is not specified in papers
 key_genes_cpm_data <- data.frame(cpm(combined_data$counts[rownames(combined_data) %in% genes_I_care_about,]))
 
 key_genes_data$GENENAME <- rownames(key_genes_data)
 key_genes_cpm_data$GENENAME <- rownames(key_genes_cpm_data)
 
 ### Prev Methods -----
+#caculates the summation for each of the samples
 prev_method_calculator <- function(signature, coef, dat) {
   out <- 0
   for(g in signature) {
@@ -59,6 +63,7 @@ NIM_coef <- list(NRG1 = 0.132, ITGA3 = 0.139, MAP1LC3A = 0.269)
 NIM_sig_out <- prev_method_calculator(NIM_Sig, NIM_coef, key_genes_data)
 NIM_sig_out_cpm <- prev_method_calculator(NIM_Sig, NIM_coef, key_genes_cpm_data)
 
+#save results to dataframe
 prev_methods_results <- data.frame(GR = t(GR_sig_out), NIM = t(NIM_sig_out), HOSS = t(HOSS_sig_out),
                                    PRGIT = t(PRGIT_sig_out), BHLNSX = t(BHLNSX_sig_out))
 
@@ -88,20 +93,9 @@ pure_tumor_prev_methods_results <- rbind(GR_sig_tum, NIM_sig_tum, HOSS_sig_tum, 
 rownames(pure_tumor_prev_methods_results) <- c("GR", "NIM", "HOSS", "PRGIT", "BHLNSX")
 pure_tumor_prev_methods_results <- pure_tumor_prev_methods_results %>% t()
 
+pure_tumor_prev_methods_results
 #save to disk
 save(prev_methods_results, prev_methods_results_cpm, pure_tumor_prev_methods_results, file = 'results/prev_methods_results.rdata')
 
-
-#Validating their is no difference between source
-
-median(prev_methods_results$GR)
-
-CGGA_res <- prev_methods_results[grep('CGGA', rownames(prev_methods_results)),]
-
-table(CGGA_res$GR < median(prev_methods_results$GR))
-table(CGGA_res$NIM < median(prev_methods_results$NIM))
-table(CGGA_res$HOSS < median(prev_methods_results$HOSS))
-table(CGGA_res$PRGIT < median(prev_methods_results$PRGIT))
-table(CGGA_res$BHLNSX < median(prev_methods_results$BHLNSX))
 
 

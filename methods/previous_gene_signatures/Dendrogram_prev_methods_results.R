@@ -15,19 +15,19 @@ colLab <- function(n) {
   if(is.leaf(n)) {
     #I take the current attributes
     a = attributes(n)
-    print(a)
+    #print(a)
     #I deduce the line in the original data, and so the treatment and the specie.
     treatment = a$label
     if (grepl("CGGA", treatment)) {
-      col_treatment = 'green'
+      col_treatment = "#D55E00"
       lab.cex = 0.01
     } else {
     if (grepl("TCGA", treatment)) {
-      col_treatment = 'blue'
+      col_treatment = "#56B4E9"
       lab.cex = 0.01
     } else{
-      col_treatment = 'red'
-      lab.cex = .3
+      col_treatment = "#000000"
+      lab.cex = .5
     }
     }
     #Modification of leaf attribute
@@ -38,7 +38,7 @@ colLab <- function(n) {
 dL <- dendrapply(dhc, colLab)
 
 png(filename = "plots/Clustering on Results from Various Gene Signature Studies.png",
-    width = 800, height = 400)
+    width = 1600, height = 1200)
 plot(dL, main = "Clustering on Results from Various Gene Signature Studies")
 
 dev.off()

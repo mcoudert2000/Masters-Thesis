@@ -46,7 +46,7 @@ model = train(x,y,'rpart',trControl=trainControl(method='cv',number=5),
 model
 #confusiong matrix on CGGA test set
 confusionMatrix(predict(model, newdata = testing), testing$outcome)
-
+confusionMatrix(predict(model, newdata = IDH_train[,1:5]), IDH_train$outcome)
 #Confusion matrix on TCGA test set
 confusionMatrix(predict(model, newdata = IDH_test[,1:5]), IDH_test$outcome)
 
@@ -66,7 +66,7 @@ astrid_IDH_results
 
 
 #Visualization ------
-Astrid_test$source = 'Astrid'
+Astrid_test$source = 'Wendler'
 IDH_train$source = 'CGGA'
 IDH_test$source = 'TCGA'
 
@@ -81,6 +81,8 @@ IDH_visualization_data$IDH <- c(rep("IDH_WT",9), ifelse(IDH_train$outcome == 1, 
 
 IDH_visualization_data
 library(rpart.plot)
+
+#figure 27
 rpart.plot(model$finalModel)
 
 #Checking % of samples that fit the condition in training and test set
@@ -101,10 +103,15 @@ Model_Prediction <- IDH_visualization_data$predict
 d <- as.data.frame(IDH_PCA$ind$coord)
 d$label <- rownames(IDH_PCA)
 
+#Figure 26
 IDH_PCA_plot <- fviz_pca_ind(IDH_PCA, geom.var = T, geom.ind = F, repel = T) +
-  geom_text(data = d[1:9,], aes(x = Dim.1, y = Dim.2, label = label), hjust = -.1, vjust =-.1) +
+  geom_text_repel(data = d[1:9,], aes(x = Dim.1, y = Dim.2, label = label), hjust = -.1, vjust =-.1) +
   geom_point(data = d, aes(x = Dim.1, y = Dim.2, col = IDH_visualization_data$IDH, pch = Source)) +
-  ggtitle("PCA Plot of 5 Key Genes Used in IDH-Signature")
+  ggtitle("PCA Plot of 5 Key Genes Used in IDH-Signature") +
+  labs(col = "IDH Type") +
+  scale_color_manual(values = c(colors_high_low$High, colors_high_low$Low), labels = c("Mutant", "Wildtype"))
+
+IDH_PCA_plot
 
 ggsave(IDH_PCA_plot, filename = 'plots/PCA Plot of 5 Key Genes Used in IDH-Signature.png')  
 
@@ -112,17 +119,13 @@ ggsave(IDH_PCA_plot, filename = 'plots/PCA Plot of 5 Key Genes Used in IDH-Signa
 d2 <- as.data.frame(IDH_PCA2$ind$coord)
 d2$label <- rownames(IDH_PCA2)
 
-IDH_PCA2_plot <- fviz_pca_ind(IDH_PCA2, geom.var = T, geom.ind = F, repel = T) +
-  geom_text(data = d2[1:9,], aes(x = Dim.1, y = Dim.2, label = label), hjust = -.1, vjust =-.1) +
-  geom_point(data = d2, aes(x = Dim.1, y = Dim.2, col = Model_Prediction, pch = Source)) +
-  ggtitle("PCA Plot of 2 Key Genes Used in IDH-Signature")
-
+#figure 28
 ggplot(IDH_visualization_data[,c("RBP1", "HMX1")]) +
   geom_point(aes(x = RBP1, y = HMX1, col = IDH_visualization_data$IDH, pch = Source)) +
-  geom_segment(aes(x = 5.7, y = 2.2, xend = -5, yend = 2.2)) +
-  geom_segment(aes(x = 5.7, y = 2.2, xend = 5.7, yend = 10)) +
+  geom_segment(aes(x = 5.7, y = 2.2, xend = -5, yend = 2.2), linetype = 'dashed') +
+  geom_segment(aes(x = 5.7, y = 2.2, xend = 5.7, yend = 10), linetype = 'dashed') +
   ggtitle("Plot of 2 Key Genes Used in IDH-Signature with Boundary Lines") +
-  labs(col = "IDH-Type")
+  labs(col = "IDH Type") + scale_color_manual(values = c(colors_high_low$High, colors_high_low$Low), labels = c("Mutant", "Wildtype"))
 
 
 IDH_PCA2_plot
@@ -138,8 +141,11 @@ IDH <- ifelse(TCGA_survival_data$samples$IDH == "WT", "WT", "Mutant")
 
 survival_TCGA_IDH <- data.frame(event, time, IDH)
 
-ggsurvplot(survfit(Surv(time, event) ~ IDH), data = survival_TCGA_IDH, pval = T) +
-  ggtitle("Survival stratified by IDH_type within the TCGA")
+ggsurvplot(survfit(Surv(time, event) ~ IDH),
+           legend.title = "IDH Status",xlab = "Time (days)",legend.labs = c("Mutant", "Wildtype"), data = survival_TCGA_IDH, pval = T)$plot +
+  ggtitle("Survival Stratified by IDH Type within the TCGA") +
+  scale_color_manual(values = c(colors_high_low$High, colors_high_low$Low))
+
 
 
 load('data/CGGA/CGGA_data.RDATA')
@@ -153,8 +159,11 @@ event_CGGA <- CGGA_survival_samples$Censor..alive.0..dead.1.
 time_CGGA <- CGGA_survival_samples$OS
 
 survival_CGGA_IDH <- data.frame(event = event_CGGA,time = time_CGGA,IDH = IDH_CGGA)
-ggsurvplot(survfit(Surv(time_CGGA, event_CGGA) ~ IDH_CGGA), data = survival_CGGA_IDH, pval = T) +
-  ggtitle("Survival stratified by IDH_type within the CGGA")
+
+#figure 25
+ggsurvplot(survfit(Surv(time_CGGA, event_CGGA) ~ IDH_CGGA), legend.title = "IDH Status",xlab = "Time (days)",xlim = c(0,2000), legend.labs = c("Mutant", "Wildtype"), ,data = survival_CGGA_IDH, pval = T)$plot +
+  ggtitle("Survival Stratified by IDH Type within the CGGA") +
+  scale_color_manual(values = c(colors_high_low$High, colors_high_low$Low))
 
 survival_CGGA_IDH$source <- rep("CGGA", length(CGGA_survival_samples[,1]))
 survival_TCGA_IDH$source <- rep("TCGA", length(TCGA_survival_samples[,1]))
