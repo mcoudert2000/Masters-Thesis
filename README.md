@@ -4,6 +4,13 @@ The methods written are all within the "methods folder" with the following break
 
 I would suggest running source("methods/Main.R") before exploring the rest of the code, as it will create all the datasets and load objects needed to run the rest of the code. 
 
+Data used from the following sources is available as follows:
+
+TCGA: gbm.exp
+CGGA: CGGA.mRNAseq_693.RSEM-genes.20200506.txt (expression data),
+CGGA.mRNAseq_693.RSEM_clinical.20200506.txt (clinical information about patients)
+Wendler: GeneCounts.RData
+
 data_cleaning:
   - TCGA_data_cleaning2.R
   - Astrid_data_cleaning.R
